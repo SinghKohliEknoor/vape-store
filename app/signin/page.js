@@ -1,10 +1,9 @@
-import LandingPage from "./Landing";
+import LandingPage from "./signin";
 
 export default function Home() {
-
   return (
     <div>
-        <LandingPage />
+      <LandingPage />
     </div>
   );
 }

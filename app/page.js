@@ -65,7 +65,7 @@ export default function Landing() {
         {/* Background with hover animation */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out group-hover:scale-105"
-          style={{ backgroundImage: `url('/vape2.png')` }}
+          style={{ backgroundImage: `url('/vape_back.png')` }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/10 transition-opacity duration-700 group-hover:opacity-90"></div>
         </div>
