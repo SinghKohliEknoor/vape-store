@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient"; // adjust path as needed
 
 export default function Signup() {
   const router = useRouter();
@@ -16,17 +17,31 @@ export default function Signup() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const { name, email, password, confirmPassword } = formData;
 
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
 
-    // Add actual sign-up logic here
-    console.log("User signed up:", formData);
-    router.push("/signin");
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: name }, // Store user's name
+      },
+    });
+
+    if (error) {
+      console.error("Signup error:", error.message);
+      alert(error.message);
+    } else {
+      console.log("Signup success:", data);
+      alert("Check your email to confirm your account.");
+      router.push("/signin");
+    }
   };
 
   return (

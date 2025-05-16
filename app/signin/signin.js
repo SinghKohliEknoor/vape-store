@@ -200,7 +200,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push("/"); // Redirect to home or dashboard
+      router.push("/home"); // new — redirect to the protected page
     }
   };
 
