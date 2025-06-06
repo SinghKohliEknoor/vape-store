@@ -1,326 +1,240 @@
 // "use client";
 // import { useState } from "react";
+// import Link from "next/link";
 // import { useRouter } from "next/navigation";
+// import { supabase } from "@/lib/supabaseClient";
 
-// export default function LoginPage() {
-//   const [email, setEmail] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [error, setError] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
+// export default function Signin() {
 //   const router = useRouter();
+//   const [formData, setFormData] = useState({
+//     email: "",
+//     password: "",
+//   });
 
-//   const handleLogin = (e) => {
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value });
+//   };
+
+//   const handleSubmit = async (e) => {
 //     e.preventDefault();
-//     setIsLoading(true);
-//     // Simulate API call
-//     setTimeout(() => {
-//       setIsLoading(false);
-//       router.push("/signup");
-//     }, 1500);
+//     const { email, password } = formData;
+
+//     const {
+//       data: { user },
+//       error,
+//     } = await supabase.auth.signInWithPassword({ email, password });
+
+//     if (error) {
+//       alert("Login failed: " + error.message);
+//       return;
+//     }
+
+//     // Check if user exists in 'users' table
+//     const { data: existingUser, error: fetchError } = await supabase
+//       .from("users")
+//       .select("*")
+//       .eq("id", user.id)
+//       .single();
+
+//     if (fetchError && fetchError.code !== "PGRST116") {
+//       console.error("Error checking user:", fetchError.message);
+//     }
+
+//     if (!existingUser) {
+//       const { error: insertError } = await supabase.from("users").insert([
+//         {
+//           id: user.id,
+//           email: user.email,
+//           full_name: user.user_metadata?.full_name || "No Name",
+//         },
+//       ]);
+
+//       if (insertError) {
+//         console.error(
+//           "Failed to insert into users table:",
+//           insertError.message
+//         );
+//         alert("Login succeeded but failed to create user profile.");
+//       }
+//     }
+
+//     router.push("/home");
 //   };
 
 //   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800">
-//       {/* Animated Background Elements */}
-//       <div className="absolute inset-0 overflow-hidden">
-//         <div className="absolute top-0 left-20 w-72 h-72 bg-violet-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-//         <div className="absolute top-0 right-20 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-//         <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-//       </div>
+//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black to-gray-900 text-white p-6">
+//       <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-lg p-8 space-y-6">
+//         <h2 className="text-3xl font-bold text-center text-violet-400">
+//           Sign In
+//         </h2>
 
-//       <div className="relative z-10 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden w-full max-w-md border border-white/20">
-//         {/* Decorative Header */}
-//         <div className="bg-gradient-to-r from-violet-600 to-pink-600 p-6 text-center">
-//           <h2 className="text-4xl font-bold text-white">Smoke Signals</h2>
-//           <p className="text-white/80 mt-2">Elevate your experience</p>
-//         </div>
+//         <form onSubmit={handleSubmit} className="space-y-4">
+//           <input
+//             type="email"
+//             name="email"
+//             placeholder="Email Address"
+//             value={formData.email}
+//             onChange={handleChange}
+//             className="w-full p-3 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+//             required
+//           />
+//           <input
+//             type="password"
+//             name="password"
+//             placeholder="Password"
+//             value={formData.password}
+//             onChange={handleChange}
+//             className="w-full p-3 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
+//             required
+//           />
+//           <button
+//             type="submit"
+//             className="w-full bg-violet-600 hover:bg-violet-700 transition py-3 rounded-lg font-medium"
+//           >
+//             Sign In
+//           </button>
+//         </form>
 
-//         <div className="p-8">
-//           {error && (
-//             <div className="mb-6 p-3 bg-red-500/10 text-red-500 rounded-lg border border-red-500/30 text-center">
-//               {error}
-//             </div>
-//           )}
-
-//           <form onSubmit={handleLogin} className="space-y-6">
-//             <div className="space-y-2">
-//               <label className="block text-white/80 text-sm font-medium">
-//                 Email
-//               </label>
-//               <div className="relative">
-//                 <input
-//                   id="email"
-//                   type="email"
-//                   className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-white placeholder-white/50 transition-all duration-300 hover:border-white/40"
-//                   value={email}
-//                   onChange={(e) => setEmail(e.target.value)}
-//                   placeholder="Enter your email"
-//                   required
-//                 />
-//                 <span className="absolute right-3 top-3 text-white/50">
-//                   <svg
-//                     xmlns="http://www.w3.org/2000/svg"
-//                     className="h-5 w-5"
-//                     fill="none"
-//                     viewBox="0 0 24 24"
-//                     stroke="currentColor"
-//                   >
-//                     <path
-//                       strokeLinecap="round"
-//                       strokeLinejoin="round"
-//                       strokeWidth={2}
-//                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-//                     />
-//                   </svg>
-//                 </span>
-//               </div>
-//             </div>
-
-//             <div className="space-y-2">
-//               <label
-//                 htmlFor="password"
-//                 className="block text-white/80 text-sm font-medium"
-//               >
-//                 Password
-//               </label>
-//               <div className="relative">
-//                 <input
-//                   id="password"
-//                   type="password"
-//                   className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-white placeholder-white/50 transition-all duration-300 hover:border-white/40"
-//                   value={password}
-//                   onChange={(e) => setPassword(e.target.value)}
-//                   placeholder="Enter your password"
-//                   required
-//                 />
-//                 <span className="absolute right-3 top-3 text-white/50">
-//                   <svg
-//                     xmlns="http://www.w3.org/2000/svg"
-//                     className="h-5 w-5"
-//                     fill="none"
-//                     viewBox="0 0 24 24"
-//                     stroke="currentColor"
-//                   >
-//                     <path
-//                       strokeLinecap="round"
-//                       strokeLinejoin="round"
-//                       strokeWidth={2}
-//                       d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-//                     />
-//                   </svg>
-//                 </span>
-//               </div>
-//             </div>
-
-//             <button
-//               type="submit"
-//               disabled={isLoading}
-//               className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all duration-300 ${
-//                 isLoading
-//                   ? "bg-violet-700 cursor-not-allowed"
-//                   : "bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 shadow-lg hover:shadow-violet-500/30"
-//               }`}
-//             >
-//               {isLoading ? (
-//                 <span className="flex items-center justify-center">
-//                   <svg
-//                     className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-//                     xmlns="http://www.w3.org/2000/svg"
-//                     fill="none"
-//                     viewBox="0 0 24 24"
-//                   >
-//                     <circle
-//                       className="opacity-25"
-//                       cx="12"
-//                       cy="12"
-//                       r="10"
-//                       stroke="currentColor"
-//                       strokeWidth="4"
-//                     ></circle>
-//                     <path
-//                       className="opacity-75"
-//                       fill="currentColor"
-//                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-//                     ></path>
-//                   </svg>
-//                   Signing in...
-//                 </span>
-//               ) : (
-//                 "Sign In"
-//               )}
-//             </button>
-//           </form>
-
-//           <div className="mt-6 text-center text-white/70 text-sm">
-//             <p>
-//               Don't have an account?{" "}
-//               <a
-//                 href="#"
-//                 className="text-violet-300 hover:text-violet-200 underline transition"
-//               >
-//                 Sign up
-//               </a>
-//             </p>
-//             <a
-//               href="#"
-//               className="mt-2 inline-block text-white/50 hover:text-white transition"
-//             >
-//               Forgot password?
-//             </a>
-//           </div>
-//         </div>
+//         <p className="text-center text-sm text-gray-400">
+//           Don’t have an account?{" "}
+//           <Link href="/signup" className="text-violet-400 hover:underline">
+//             Sign Up
+//           </Link>
+//         </p>
 //       </div>
 //     </div>
 //   );
 // }
 "use client";
+
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient"; // Make sure this path is correct
+import { supabase } from "@/lib/supabaseClient";
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+export default function Signin() {
   const router = useRouter();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  const handleLogin = async (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    const { email, password } = formData;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setIsLoading(false);
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
-    } else {
-      router.push("/home"); // new — redirect to the protected page
+      alert("Login failed: " + error.message);
+      return;
     }
+
+    // Ensure user exists in our "users" table
+    const { data: existingUser, error: fetchError } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (fetchError && fetchError.code !== "PGRST116") {
+      console.error("Error checking user:", fetchError.message);
+    }
+
+    if (!existingUser) {
+      const { error: insertError } = await supabase.from("users").insert([
+        {
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || "No Name",
+        },
+      ]);
+
+      if (insertError) {
+        console.error(
+          "Failed to insert into users table:",
+          insertError.message
+        );
+        alert("Login succeeded but failed to create user profile.");
+      }
+    }
+
+    router.push("/home");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800">
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-20 w-72 h-72 bg-violet-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-20 w-72 h-72 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-1/2 w-72 h-72 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen bg-white text-black flex flex-col">
+      {/* Header with Logo */}
+      <header className="flex justify-center items-center px-6 py-4 border-b border-gray-200 bg-white">
+        <Link href="/" className="flex items-center space-x-3">
+          <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
+          <h1 className="text-3xl font-bold text-gray-700">Vape Vault</h1>
+        </Link>
+      </header>
 
-      <div className="relative z-10 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl overflow-hidden w-full max-w-md border border-white/20">
-        <div className="bg-gradient-to-r from-violet-600 to-pink-600 p-6 text-center">
-          <h2 className="text-4xl font-bold text-white">Smoke Signals</h2>
-          <p className="text-white/80 mt-2">Elevate your experience</p>
-        </div>
-
-        <div className="p-8">
-          {error && (
-            <div className="mb-6 p-3 bg-red-500/10 text-red-500 rounded-lg border border-red-500/30 text-center">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="block text-white/80 text-sm font-medium">
-                Email
+      <main className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl shadow-md p-8">
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+            Sign In
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-gray-700 mb-1">
+                Email Address
               </label>
-              <div className="relative">
-                <input
-                  id="email"
-                  type="email"
-                  className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-white placeholder-white/50 transition-all duration-300 hover:border-white/40"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                placeholder="you@example.com"
+              />
             </div>
-
-            <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-white/80 text-sm font-medium"
-              >
+            <div>
+              <label htmlFor="password" className="block text-gray-700 mb-1">
                 Password
               </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type="password"
-                  className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-500 text-white placeholder-white/50 transition-all duration-300 hover:border-white/40"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
-                />
-              </div>
+              <input
+                id="password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                placeholder="Enter your password"
+              />
             </div>
-
             <button
               type="submit"
-              disabled={isLoading}
-              className={`w-full py-3 px-4 rounded-xl font-medium text-white transition-all duration-300 ${
-                isLoading
-                  ? "bg-violet-700 cursor-not-allowed"
-                  : "bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 shadow-lg hover:shadow-violet-500/30"
-              }`}
+              className="w-full bg-yellow-300 hover:bg-yellow-400 text-black py-3 rounded-lg font-medium transition"
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                "Sign In"
-              )}
+              Sign In
             </button>
           </form>
-
-          <div className="mt-6 text-center text-white/70 text-sm">
-            <p>
-              Don't have an account?{" "}
-              <a
-                href="/signup"
-                className="text-violet-300 hover:text-violet-200 underline transition"
-              >
-                Sign up
-              </a>
-            </p>
-            <a
-              href="#"
-              className="mt-2 inline-block text-white/50 hover:text-white transition"
-            >
-              Forgot password?
-            </a>
-          </div>
+          <p className="text-center text-gray-600 mt-6 text-sm">
+            Don’t have an account?{" "}
+            <Link href="/signup" className="text-yellow-600 hover:underline">
+              Sign Up
+            </Link>
+          </p>
         </div>
-      </div>
+      </main>
+
+      <footer className="bg-gray-100 text-gray-700 text-center p-6 text-sm border-t border-gray-200">
+        &copy; {new Date().getFullYear()} Vape Vault. All rights reserved.
+      </footer>
     </div>
   );
 }
