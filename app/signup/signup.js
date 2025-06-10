@@ -1,257 +1,128 @@
-// "use client";
-// import { useState } from "react";
-// import Link from "next/link";
-// import { useRouter } from "next/navigation";
-// import { supabase } from "@/lib/supabaseClient";
+// app/(protected)/signup/page.js
+'use client';
 
-// export default function Signup() {
-//   const router = useRouter();
-//   const [formData, setFormData] = useState({
-//     name: "",
-//     email: "",
-//     password: "",
-//     confirmPassword: "",
-//   });
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
-//   const handleChange = (e) => {
-//     setFormData({ ...formData, [e.target.name]: e.target.value });
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     const { name, email, password, confirmPassword } = formData;
-
-//     if (password !== confirmPassword) {
-//       alert("Passwords do not match");
-//       return;
-//     }
-
-//     const { data, error } = await supabase.auth.signUp({
-//       email,
-//       password,
-//       options: {
-//         data: { full_name: name },
-//       },
-//     });
-
-//     if (error) {
-//       console.error("Signup error:", error.message);
-//       alert(error.message);
-//     } else {
-//       console.log("Signup success:", data);
-//       alert("Check your email to confirm your account.");
-//       router.push("/signin");
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black to-gray-900 text-white p-6">
-//       <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-lg p-8 space-y-6">
-//         <h2 className="text-3xl font-bold text-center text-violet-400">
-//           Create an Account
-//         </h2>
-
-//         <form onSubmit={handleSubmit} className="space-y-4">
-//           <input
-//             type="text"
-//             name="name"
-//             placeholder="Full Name"
-//             value={formData.name}
-//             onChange={handleChange}
-//             className="w-full p-3 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-//             required
-//           />
-//           <input
-//             type="email"
-//             name="email"
-//             placeholder="Email Address"
-//             value={formData.email}
-//             onChange={handleChange}
-//             className="w-full p-3 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-//             required
-//           />
-//           <input
-//             type="password"
-//             name="password"
-//             placeholder="Password"
-//             value={formData.password}
-//             onChange={handleChange}
-//             className="w-full p-3 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-//             required
-//           />
-//           <input
-//             type="password"
-//             name="confirmPassword"
-//             placeholder="Confirm Password"
-//             value={formData.confirmPassword}
-//             onChange={handleChange}
-//             className="w-full p-3 rounded-lg bg-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-//             required
-//           />
-//           <button
-//             type="submit"
-//             className="w-full bg-violet-600 hover:bg-violet-700 transition py-3 rounded-lg font-medium"
-//           >
-//             Sign Up
-//           </button>
-//         </form>
-
-//         <p className="text-center text-sm text-gray-400">
-//           Already have an account?{" "}
-//           <Link href="/signin" className="text-violet-400 hover:underline">
-//             Sign In
-//           </Link>
-//         </p>
-//       </div>
-//     </div>
-//   );
-// }
-"use client";
-
-import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
-
-export default function Signup() {
+export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'password') calculatePasswordStrength(value);
+  };
+
+  const calculatePasswordStrength = (password) => {
+    let strength = 0;
+    if (password.length >= 8) strength += 1;
+    if (/[A-Z]/.test(password)) strength += 1;
+    if (/[0-9]/.test(password)) strength += 1;
+    if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+    setPasswordStrength(strength);
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) return setError('Please enter your full name'), false;
+    if (!/^\S+@\S+\.\S+$/.test(formData.email)) return setError('Please enter a valid email address'), false;
+    if (formData.password.length < 8) return setError('Password must be at least 8 characters'), false;
+    if (passwordStrength < 3) return setError('Password is too weak. Include uppercase, numbers, and symbols'), false;
+    if (formData.password !== formData.confirmPassword) return setError('Passwords do not match'), false;
+    setError(null);
+    return true;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { name, email, password, confirmPassword } = formData;
+    if (!validateForm()) return;
+    setLoading(true);
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: name },
-      },
-    });
-
-    if (error) {
-      console.error("Signup error:", error.message);
-      alert(error.message);
-    } else {
-      console.log("Signup success:", data);
-      alert("Check your email to confirm your account.");
-      router.push("/signin");
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: { full_name: formData.name },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+      if (data.user?.identities?.length === 0) throw new Error('This email is already registered');
+      router.push('/signin?signup=success');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col">
-      {/* Header with Logo */}
       <header className="flex justify-center items-center px-6 py-4 border-b border-gray-200 bg-white">
-        <Link href="/" className="flex items-center space-x-3">
-          <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
+        <a href="/" className="flex items-center space-x-3">
+          <img src="/Logo.png" alt="Vape Vault Logo" className="w-20 h-20" />
           <h1 className="text-3xl font-bold text-gray-700">Vape Vault</h1>
-        </Link>
+        </a>
       </header>
 
-      <main className="flex-1 flex items-center justify-center px-6">
+      <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl shadow-md p-8">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-            Create an Account
-          </h2>
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Create an Account</h2>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-gray-700 mb-1">
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                placeholder="John Doe"
-              />
+              <label htmlFor="name" className="block text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
+              <input id="name" type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="John Doe" />
             </div>
 
+            {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-gray-700 mb-1">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                placeholder="you@example.com"
-              />
+              <label htmlFor="email" className="block text-gray-700 mb-1">Email Address <span className="text-red-500">*</span></label>
+              <input id="email" type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="you@example.com" />
             </div>
 
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-gray-700 mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                placeholder="Enter your password"
-              />
+              <label htmlFor="password" className="block text-gray-700 mb-1">Password <span className="text-red-500">*</span></label>
+              <input id="password" type="password" name="password" value={formData.password} onChange={handleChange} className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="At least 8 characters" />
+              <div className="mt-1 flex gap-1">
+                {[1,2,3,4].map(i => (
+                  <div key={i} className={`h-1 flex-1 rounded-sm ${passwordStrength >= i ? (i >= 3 ? 'bg-green-500' : 'bg-yellow-500') : 'bg-gray-200'}`} />
+                ))}
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Include uppercase, numbers, and symbols for stronger security</p>
             </div>
 
+            {/* Confirm Password */}
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-gray-700 mb-1"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                placeholder="Re-enter your password"
-              />
+              <label htmlFor="confirmPassword" className="block text-gray-700 mb-1">Confirm Password <span className="text-red-500">*</span></label>
+              <input id="confirmPassword" type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} className="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" placeholder="Re-enter your password" />
             </div>
 
-            <button
-              type="submit"
-              className="w-full bg-yellow-300 hover:bg-yellow-400 text-black py-3 rounded-lg font-medium transition"
-            >
-              Sign Up
+            {/* Submit Button */}
+            <button type="submit" disabled={loading} className={`w-full py-3 rounded-lg font-medium transition ${loading ? 'bg-yellow-200 cursor-not-allowed' : 'bg-[#FFE54D] hover:bg-[#FFD700]'}`}>
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
           </form>
 
-          <p className="text-center text-gray-600 mt-6 text-sm">
-            Already have an account?{" "}
-            <Link href="/signin" className="text-yellow-600 hover:underline">
-              Sign In
-            </Link>
-          </p>
+          <div className="mt-6 text-center text-sm text-gray-600">
+            <p>Already have an account? <a href="/signin" className="text-yellow-600 hover:underline font-medium">Sign In</a></p>
+          </div>
         </div>
       </main>
 

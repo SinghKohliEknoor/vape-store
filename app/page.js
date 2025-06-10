@@ -179,8 +179,10 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Head from "next/head";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import BrandPromise from "app/components/BrandPromise";
 
 const products = [
   {
@@ -204,11 +206,7 @@ const products = [
     name: "Stealth X",
     description: "Ultra-portable and discreet",
     image: "/vape4.png",
-    features: [
-      "Pocket-sized design",
-      "Leak-proof technology",
-      "USB-C charging",
-    ],
+    features: ["Pocket-sized design", "Leak-proof technology", "USB-C charging"],
     price: 39.99,
   },
 ];
@@ -216,7 +214,6 @@ const products = [
 export default function Landing() {
   const router = useRouter();
 
-  // If user is already authenticated, redirect to protected home
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
@@ -226,72 +223,62 @@ export default function Landing() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-white text-black font-sans flex flex-col">
+    <div className="min-h-screen bg-white text-black font-sans flex flex-col scroll-smooth">
+      <Head>
+        <title>Vape Vault – Premium Vape Devices</title>
+        <meta
+          name="description"
+          content="Discover premium vape products at Vape Vault – stylish, powerful, and built for your lifestyle."
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
+
       {/* HEADER */}
       <header className="flex justify-between items-center px-6 py-4 border-b border-gray-200 shadow-sm bg-white">
-        <Link href="/" className="flex items-center space-x-3">
+        <Link href="/" className="flex items-center space-x-3" aria-label="Home">
           <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
           <h1 className="text-3xl font-bold text-gray-700">Vape Vault</h1>
         </Link>
         <nav className="space-x-6 text-lg flex items-center">
-          <Link
-            href="/signin"
-            className="text-yellow-600 hover:text-yellow-800 transition"
-          >
-            Sign In
-          </Link>
-          <Link
-            href="/signup"
-            className="text-yellow-600 hover:text-yellow-800 transition"
-          >
-            Sign Up
-          </Link>
-          <Link
-            href="#products"
-            className="text-gray-600 hover:text-gray-800 transition"
-          >
-            Products
-          </Link>
-          <Link
-            href="#about"
-            className="text-gray-600 hover:text-gray-800 transition"
-          >
-            About
-          </Link>
-          <Link
-            href="#contact"
-            className="text-gray-600 hover:text-gray-800 transition"
-          >
-            Contact
-          </Link>
+          <Link href="/signin" className="text-yellow-600 hover:text-yellow-800 transition">Sign In</Link>
+          <Link href="/signup" className="text-yellow-600 hover:text-yellow-800 transition">Sign Up</Link>
+          <Link href="#products" className="text-gray-600 hover:text-gray-800 transition">Products</Link>
+          <Link href="#about" className="text-gray-600 hover:text-gray-800 transition">About</Link>
+          <Link href="#contact" className="text-gray-600 hover:text-gray-800 transition">Contact</Link>
         </nav>
       </header>
 
       {/* HERO SECTION */}
       <main className="relative px-6 py-32 text-center overflow-hidden flex-1">
         <div
-          className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out group-hover:scale-105"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('/vape_back.png')` }}
         ></div>
-
         <div className="relative z-10 mx-auto max-w-4xl">
           <h2 className="text-5xl font-bold mb-6 text-white drop-shadow-lg">
             Discover Your Next Favorite Vape
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in
-            one place.
+            Premium vape products, stylish designs, and smooth flavors – all in one place.
           </p>
           <Link href="#products">
-            <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition">
+            <button
+              className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition"
+              aria-label="Browse Products"
+            >
               Browse Products
             </button>
           </Link>
         </div>
       </main>
 
+      {/* BRAND PROMISE SECTION */}
+      <section className="pt--120">
+        <BrandPromise />
+      </section>
+
       {/* PRODUCTS SECTION */}
-      <section id="products" className="px-6 py-20 bg-gray-50">
+      <section id="products" className="px-6 py-16 bg-white">
         <div className="max-w-7xl mx-auto">
           <h3 className="text-4xl font-semibold text-center mb-4 text-gray-800">
             Our Collection
@@ -309,7 +296,7 @@ export default function Landing() {
                 <div className="relative h-64 bg-gray-100">
                   <Image
                     src={product.image}
-                    alt={product.name}
+                    alt={`Image of ${product.name}`}
                     fill
                     className="object-contain p-6 transition-transform duration-300 hover:scale-105"
                   />
@@ -320,7 +307,7 @@ export default function Landing() {
                   </h4>
                   <p className="text-gray-600 mb-2">{product.description}</p>
                   <p className="text-yellow-600 font-semibold mb-4">
-                    ${product.price}
+                    ${product.price.toFixed(2)}
                   </p>
                   <ul className="text-gray-500 text-sm mb-6 space-y-1 flex-1">
                     {product.features.map((feature, i) => (
@@ -330,6 +317,7 @@ export default function Landing() {
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
+                          aria-hidden="true"
                         >
                           <path
                             strokeLinecap="round"
@@ -345,6 +333,7 @@ export default function Landing() {
                   <button
                     onClick={() => router.push("/signup")}
                     className="mt-auto w-full bg-yellow-300 hover:bg-yellow-400 text-black py-3 rounded-lg font-medium transition"
+                    aria-label={`Sign up to view details about ${product.name}`}
                   >
                     Sign Up to View Details
                   </button>
@@ -356,7 +345,7 @@ export default function Landing() {
       </section>
 
       {/* ABOUT SECTION */}
-      <section id="about" className="px-6 py-20 text-center bg-white">
+      <section id="about" className="px-6 py-5 text-center bg-gray-100">
         <h3 className="text-4xl font-semibold mb-6 text-gray-800">
           About Vape Vault
         </h3>
@@ -368,11 +357,9 @@ export default function Landing() {
       </section>
 
       {/* CONTACT SECTION */}
-      <section id="contact" className="px-6 py-20 text-center bg-gray-50">
-        <h3 className="text-4xl font-semibold mb-6 text-gray-800">
-          Contact Us
-        </h3>
-        <p className="text-gray-600 text-lg mb-4">
+      <section id="contact" className="px-6 py-10 text-center bg-gray-100">
+        <h3 className="text-4xl font-semibold mb-6 text-gray-800">Contact Us</h3>
+        <p className="text-gray-600 text-lg mb-0">
           Have questions or want to collaborate?
         </p>
         <a

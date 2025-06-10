@@ -12,6 +12,9 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -42,6 +45,7 @@ export default function Home() {
       const { data, error } = await supabase.from("products").select("*");
       if (error) {
         console.error("Error fetching products:", error.message);
+        setErrorMessage("Failed to load products.");
       } else {
         setProducts(data);
       }
@@ -57,6 +61,8 @@ export default function Home() {
   };
 
   const addToCart = async (productId) => {
+    setProcessingId(productId);
+    setErrorMessage("");
     try {
       let { data: cart, error: cartError } = await supabase
         .from("carts")
@@ -87,13 +93,16 @@ export default function Home() {
       alert("Product added to cart!");
     } catch (error) {
       console.error("Add to cart failed:", error.message || error);
-      alert("Something went wrong while adding to cart.");
+      setErrorMessage("Something went wrong while adding to cart.");
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const addToWishlist = async (productId) => {
+    setProcessingId(productId);
+    setErrorMessage("");
     try {
-      // 1) Look up an existing wishlist for this user:
       let { data: wishlist, error: wlError } = await supabase
         .from("wishlists")
         .select("id")
@@ -101,7 +110,6 @@ export default function Home() {
         .single();
 
       if (wlError && wlError.code === "PGRST116") {
-        // No wishlist found, so create one named "My Wishlist"
         const { data: newWishlist, error: createError } = await supabase
           .from("wishlists")
           .insert({ user_id: user.id, name: "My Wishlist" })
@@ -114,7 +122,6 @@ export default function Home() {
         throw wlError;
       }
 
-      // 2) Insert into wishlist_items
       const { error: itemError } = await supabase
         .from("wishlist_items")
         .insert({
@@ -126,9 +133,15 @@ export default function Home() {
       alert("Product added to wishlist!");
     } catch (error) {
       console.error("Add to wishlist failed:", error.message || error);
-      alert("Something went wrong while adding to wishlist.");
+      setErrorMessage("Something went wrong while adding to wishlist.");
+    } finally {
+      setProcessingId(null);
     }
   };
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (!user || loading) {
     return (
@@ -140,11 +153,25 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-black">
+      {/* Header with Search Bar */}
       <header className="flex justify-between items-center px-6 py-2 border-b border-gray-200 shadow-sm bg-white">
         <div className="flex items-center space-x-3">
           <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
           <h1 className="text-3xl font-bold text-gray-700">Vape Vault</h1>
         </div>
+
+        {/* Search Bar (Only after login) */}
+<div className="flex-grow max-w-md mx-auto relative">
+  <input
+    type="text"
+    placeholder="Search products..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)}
+    className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+  />
+</div>
+
+
         <nav className="space-x-6 text-lg flex items-center">
           <Link href="/account" className="hover:text-yellow-400 transition">
             My Account
@@ -164,6 +191,7 @@ export default function Home() {
         </nav>
       </header>
 
+      {/* Main Hero Section */}
       <main className="relative px-6 py-50 text-center overflow-hidden group">
         <div
           className="absolute inset-0 bg-contain bg-center transition-all duration-1000 ease-in-out group-hover:scale-120"
@@ -175,8 +203,7 @@ export default function Home() {
             Discover Your Next Favorite Vape
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in
-            one place.
+            Premium vape products, stylish designs, and smooth flavors – all in one place.
           </p>
           <Link href="#products">
             <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition">
@@ -186,13 +213,17 @@ export default function Home() {
         </div>
       </main>
 
+      {/* Product Listing */}
       <main id="products" className="px-6 py-20">
         <div className="max-w-7xl mx-auto">
           <h3 className="text-4xl font-semibold text-center mb-12 text-gray-700">
             Our Collection
           </h3>
+          {errorMessage && (
+            <p className="text-center text-red-600 mb-6">{errorMessage}</p>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => router.push(`/product/${product.id}`)}
@@ -203,6 +234,7 @@ export default function Home() {
                     src={product.image_url}
                     alt={product.name}
                     fill
+                    loading="lazy"
                     className="object-contain p-4 transition-transform duration-300"
                   />
                 </div>
@@ -213,20 +245,22 @@ export default function Home() {
                   </p>
                   <div className="flex justify-between items-center mt-auto space-x-2">
                     <button
+                      disabled={processingId === product.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         addToCart(product.id);
                       }}
-                      className="flex-1 bg-yellow-300 hover:bg-yellow-400 py-2 rounded-md text-sm font-medium text-black transition"
+                      className="flex-1 bg-yellow-300 hover:bg-yellow-400 py-2 rounded-md text-sm font-medium text-black transition disabled:opacity-50"
                     >
                       Add to Cart
                     </button>
                     <button
+                      disabled={processingId === product.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         addToWishlist(product.id);
                       }}
-                      className="p-2 rounded-md hover:bg-yellow-100 transition"
+                      className="p-2 rounded-md hover:bg-yellow-100 transition disabled:opacity-50"
                       title="Add to Wishlist"
                     >
                       <HeartIcon className="h-5 w-5 text-yellow-600" />

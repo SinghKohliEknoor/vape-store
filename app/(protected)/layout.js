@@ -1,4 +1,3 @@
-// app/(protected)/layout.js
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -25,7 +24,11 @@ export default function ProtectedLayout({ children }) {
   }, [router]);
 
   if (loading) {
-    return <div className="text-white p-6">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white text-lg">
+        Loading...
+      </div>
+    );
   }
 
   return <>{children}</>;

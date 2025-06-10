@@ -11,6 +11,9 @@ export default function ProductDetail() {
   const router = useRouter();
   const [product, setProduct] = useState(null);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(false);
+  const [addingToWishlist, setAddingToWishlist] = useState(false);
 
   useEffect(() => {
     const fetchUserAndProduct = async () => {
@@ -32,12 +35,15 @@ export default function ProductDetail() {
       } else {
         setProduct(data);
       }
+      setLoading(false);
     };
 
     fetchUserAndProduct();
   }, [id, router]);
 
   const addToCart = async () => {
+    if (!user || addingToCart) return;
+    setAddingToCart(true);
     try {
       let { data: cart, error: cartError } = await supabase
         .from("carts")
@@ -46,44 +52,90 @@ export default function ProductDetail() {
         .single();
 
       if (cartError && cartError.code === "PGRST116") {
-        const { data: newCart } = await supabase
+        const { data: newCart, error: newCartError } = await supabase
           .from("carts")
           .insert({ user_id: user.id })
           .select("id")
           .single();
+
+        if (newCartError) throw newCartError;
         cart = newCart;
+      } else if (cartError) {
+        throw cartError;
       }
 
-      await supabase.from("cart_items").insert({
+      const { error: itemError } = await supabase.from("cart_items").insert({
         cart_id: cart.id,
         product_id: product.id,
         quantity: 1,
       });
 
+      if (itemError) throw itemError;
+
       alert("Added to cart!");
     } catch (error) {
       console.error(error);
       alert("Failed to add to cart");
+    } finally {
+      setAddingToCart(false);
     }
   };
 
   const addToWishlist = async () => {
+    if (!user || addingToWishlist) return;
+    setAddingToWishlist(true);
     try {
-      await supabase.from("wishlists").insert({
-        user_id: user.id,
-        product_id: product.id,
-      });
+      // Get or create wishlist
+      let { data: wishlist, error: wlError } = await supabase
+        .from("wishlists")
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      if (wlError && wlError.code === "PGRST116") {
+        const { data: newWishlist, error: createError } = await supabase
+          .from("wishlists")
+          .insert({ user_id: user.id, name: "My Wishlist" })
+          .select("id")
+          .single();
+
+        if (createError) throw createError;
+        wishlist = newWishlist;
+      } else if (wlError) {
+        throw wlError;
+      }
+
+      // Insert into wishlist_items
+      const { error: itemError } = await supabase
+        .from("wishlist_items")
+        .insert({
+          wishlist_id: wishlist.id,
+          product_id: product.id,
+        });
+
+      if (itemError) throw itemError;
+
       alert("Added to wishlist!");
     } catch (error) {
-      console.error(error);
+      console.error("Add to wishlist failed:", error);
       alert("Failed to add to wishlist");
+    } finally {
+      setAddingToWishlist(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-white text-black">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
       <div className="min-h-screen flex justify-center items-center bg-white text-black">
-        <p>Loading...</p>
+        <p>Product not found.</p>
       </div>
     );
   }
@@ -109,9 +161,7 @@ export default function ProductDetail() {
 
         <div className="flex-1 space-y-4">
           <h1 className="text-3xl font-bold">{product.name}</h1>
-          <p className="text-yellow-600 text-xl font-semibold">
-            ${product.price}
-          </p>
+          <p className="text-yellow-600 text-xl font-semibold">${product.price}</p>
           <p className="text-gray-700">{product.description}</p>
 
           <ul className="list-disc pl-5 text-gray-600">
@@ -128,16 +178,26 @@ export default function ProductDetail() {
           <div className="flex gap-4 mt-6">
             <button
               onClick={addToCart}
-              className="bg-yellow-300 hover:bg-yellow-400 px-6 py-2 rounded-md text-black font-medium"
+              disabled={addingToCart}
+              className={`px-6 py-2 rounded-md text-black font-medium ${
+                addingToCart
+                  ? "bg-yellow-200 cursor-not-allowed"
+                  : "bg-yellow-300 hover:bg-yellow-400"
+              }`}
             >
-              Add to Cart
+              {addingToCart ? "Adding..." : "Add to Cart"}
             </button>
             <button
               onClick={addToWishlist}
-              className="flex items-center gap-2 px-6 py-2 rounded-md border border-yellow-400 text-yellow-600 hover:bg-yellow-100"
+              disabled={addingToWishlist}
+              className={`flex items-center gap-2 px-6 py-2 rounded-md border text-yellow-600 ${
+                addingToWishlist
+                  ? "border-yellow-200 cursor-not-allowed"
+                  : "border-yellow-400 hover:bg-yellow-100"
+              }`}
             >
               <HeartIcon className="h-5 w-5" />
-              Wishlist
+              {addingToWishlist ? "Adding..." : "Wishlist"}
             </button>
           </div>
         </div>
