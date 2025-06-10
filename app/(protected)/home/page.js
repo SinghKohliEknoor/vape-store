@@ -161,16 +161,15 @@ export default function Home() {
         </div>
 
         {/* Search Bar (Only after login) */}
-<div className="flex-grow max-w-md mx-auto relative">
-  <input
-    type="text"
-    placeholder="Search products..."
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-  />
-</div>
-
+        <div className="flex-grow max-w-md mx-auto relative">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+          />
+        </div>
 
         <nav className="space-x-6 text-lg flex items-center">
           <Link href="/account" className="hover:text-yellow-400 transition">
@@ -203,7 +202,8 @@ export default function Home() {
             Discover Your Next Favorite Vape
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in one place.
+            Premium vape products, stylish designs, and smooth flavors – all in
+            one place.
           </p>
           <Link href="#products">
             <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition">
