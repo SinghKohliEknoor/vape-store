@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { HeartIcon } from "@heroicons/react/24/outline";
+import { HeartIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
   const router = useRouter();
@@ -162,12 +162,31 @@ export default function Home() {
 
         {/* Search Bar (Only after login) */}
         <div className="flex-grow max-w-md mx-auto relative">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
           <input
             type="text"
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+            className="
+    w-full
+    pl-10
+    pr-10
+    py-2.5
+    text-sm
+    font-medium
+    border border-gray-800
+    rounded-full
+    shadow-sm
+    placeholder-gray-900
+    focus:outline-none
+    focus:ring-2
+    focus:ring-yellow-400
+    focus:border-yellow-400
+    transition
+    duration-300
+    ease-in-out
+  "
           />
         </div>
 
