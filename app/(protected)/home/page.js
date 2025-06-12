@@ -25,15 +25,13 @@ export default function Home() {
       }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (!session) {
-          router.push("/signin");
-        } else {
-          setUser(session.user);
-        }
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        router.push("/signin");
+      } else {
+        setUser(session.user);
       }
-    );
+    });
 
     return () => {
       listener?.subscription.unsubscribe();
@@ -122,12 +120,10 @@ export default function Home() {
         throw wlError;
       }
 
-      const { error: itemError } = await supabase
-        .from("wishlist_items")
-        .insert({
-          wishlist_id: wishlist.id,
-          product_id: productId,
-        });
+      const { error: itemError } = await supabase.from("wishlist_items").insert({
+        wishlist_id: wishlist.id,
+        product_id: productId,
+      });
 
       if (itemError) throw itemError;
       alert("Product added to wishlist!");
@@ -145,82 +141,54 @@ export default function Home() {
 
   if (!user || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-black bg-white">
+      <div className="min-h-screen flex items-center justify-center text-white bg-black">
         <p>Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-black">
-      {/* Header with Search Bar */}
-      <header className="flex justify-between items-center px-6 py-2 border-b border-gray-200 shadow-sm bg-white">
-        <div className="flex items-center space-x-3">
-          <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
-          <h1 className="text-3xl font-bold text-gray-700">Vape Vault</h1>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+      {/* Sticky Glassmorphism Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 border-b border-white/20 bg-white/10 backdrop-blur-md">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
+            <h1 className="text-3xl font-bold text-yellow-300">Vape Vault</h1>
+          </div>
 
-        {/* Search Bar (Only after login) */}
-        <div className="flex-grow max-w-md mx-auto relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="
-              w-full
-              pl-10
-              pr-10
-              py-2.5
-              text-sm
-              font-medium
-              border border-gray-800
-              rounded-full
-              shadow-sm
-              placeholder-gray-900
-              focus:outline-none
-              focus:ring-2
-              focus:ring-yellow-400
-              focus:border-yellow-400
-              transition
-              duration-300
-              ease-in-out
-            "
-          />
-        </div>
+          <div className="flex-grow max-w-md mx-auto relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 text-sm font-medium bg-white/10 border border-white/30 text-white placeholder-white/70 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition duration-300 ease-in-out"
+            />
+          </div>
 
-        <nav className="space-x-6 text-lg flex items-center">
-          <Link href="/account" className="hover:text-yellow-400 transition">
-            My Account
-          </Link>
-          <Link href="/wishlist" className="hover:text-yellow-400 transition">
-            Wishlist
-          </Link>
-          <Link href="/cart" className="hover:text-yellow-400 transition">
-            Cart
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
-          >
-            Logout
-          </button>
-        </nav>
+          <nav className="space-x-6 text-lg flex items-center">
+            <Link href="/account" className="hover:text-yellow-400 transition">My Account</Link>
+            <Link href="/wishlist" className="hover:text-yellow-400 transition">Wishlist</Link>
+            <Link href="/cart" className="hover:text-yellow-400 transition">Cart</Link>
+            <button
+              onClick={handleLogout}
+              className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
+            >
+              Logout
+            </button>
+          </nav>
+        </div>
       </header>
 
-      {/* Main Hero Section */}
-      <main className="relative px-6 py-50 text-center overflow-hidden group">
-        <div
-          className="absolute inset-0 bg-contain bg-center transition-all duration-1000 ease-in-out group-hover:scale-120"
-          style={{ backgroundImage: `url('/vape_back.png')` }}
-        ></div>
-
+      {/* Hero Section */}
+      <main className="relative pt-32 px-6 pb-20 text-center overflow-hidden group">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('/vape_back.png')` }}></div>
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10">
-          <h2 className="text-5xl font-bold mb-4 text-white">
-            Discover Your Next Favorite Vape
-          </h2>
-          <p className="text-xl text-white max-w-2xl mx-auto mb-8">
+          <h2 className="text-5xl font-bold mb-4 text-white">Discover Your Next Favorite Vape</h2>
+          <p className="text-xl text-white/80 max-w-2xl mx-auto mb-8">
             Premium vape products, stylish designs, and smooth flavors – all in one place.
           </p>
           <Link href="#products">
@@ -231,23 +199,22 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Product Listing */}
-      <main id="products" className="px-6 py-20">
+      {/* Product Section */}
+      <main id="products" className="px-6 pb-20">
         <div className="max-w-7xl mx-auto">
-          <h3 className="text-4xl font-semibold text-center mb-12 text-gray-700">
+          <h3 className="text-4xl font-semibold text-center mb-12 text-yellow-300">
             Our Collection
           </h3>
-          {errorMessage && (
-            <p className="text-center text-red-600 mb-6">{errorMessage}</p>
-          )}
+          {errorMessage && <p className="text-center text-red-400 mb-6">{errorMessage}</p>}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 onClick={() => router.push(`/product/${product.id}`)}
-                className="cursor-pointer bg-gray-50 border border-gray-200 rounded-xl overflow-hidden shadow hover:shadow-xl transition-all flex flex-col"
+                className="cursor-pointer bg-white/10 backdrop-blur-md border border-white/20 rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all flex flex-col"
               >
-                <div className="relative h-64 bg-white">
+                <div className="relative h-64 bg-gray-100">
                   <Image
                     src={product.image_url}
                     alt={product.name}
@@ -257,10 +224,8 @@ export default function Home() {
                   />
                 </div>
                 <div className="p-4 flex flex-col">
-                  <h4 className="text-xl font-bold mb-4">{product.name}</h4>
-                  <p className="text-yellow-600 text-lg font-semibold mb-4">
-                    ${product.price}
-                  </p>
+                  <h4 className="text-xl font-bold mb-4 text-white">{product.name}</h4>
+                  <p className="text-yellow-300 text-lg font-semibold mb-4">${product.price}</p>
                   <div className="flex justify-between items-center mt-auto space-x-2">
                     <button
                       disabled={processingId === product.id}
@@ -269,9 +234,7 @@ export default function Home() {
                         addToCart(product.id);
                       }}
                       className="flex-1 bg-yellow-300 hover:bg-yellow-400 py-2 rounded-md text-sm font-medium text-black transition disabled:opacity-50"
-                    >
-                      Add to Cart
-                    </button>
+                    >Add to Cart</button>
                     <button
                       disabled={processingId === product.id}
                       onClick={(e) => {
@@ -281,7 +244,7 @@ export default function Home() {
                       className="p-2 rounded-md hover:bg-yellow-100 transition disabled:opacity-50"
                       title="Add to Wishlist"
                     >
-                      <HeartIcon className="h-5 w-5 text-yellow-600" />
+                      <HeartIcon className="h-5 w-5 text-yellow-400" />
                     </button>
                   </div>
                 </div>
@@ -291,7 +254,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="bg-gray-100 text-gray-700 text-center p-6 text-sm border-t border-gray-200">
+      <footer className="bg-white/10 backdrop-blur-md text-white/70 text-center p-6 text-sm border-t border-white/20">
         &copy; {new Date().getFullYear()} Vape Vault. All rights reserved.
       </footer>
     </div>

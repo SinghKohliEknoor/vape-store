@@ -1,9 +1,10 @@
-// app/(protected)/signin/page.js
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ export default function LoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
       if (error) throw error;
@@ -34,101 +35,85 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex flex-col">
+      <header className="sticky top-0 z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
+        <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+          <Link href="/" className="flex items-center space-x-3">
+            <Image src="/Logo.png" alt="Vape Vault Logo" width={60} height={60} />
+            <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
+          </Link>
+          <nav className="flex items-center space-x-6 text-sm md:text-base">
+            <Link href="/signin" className="text-yellow-400 hover:underline">Sign In</Link>
+            <Link href="/signup" className="text-yellow-400 hover:underline">Sign Up</Link>
+            <Link href="/products" className="hover:text-yellow-400">Products</Link>
+            <Link href="/about" className="hover:text-yellow-400">About</Link>
+            <Link href="/contact" className="hover:text-yellow-400">Contact</Link>
+          </nav>
         </div>
-        
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                {/* Error icon */}
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
+      </header>
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="rounded-md shadow-sm space-y-4">
+      <main className="flex-1 flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-xl p-8 shadow-lg">
+          <h2 className="text-3xl font-bold text-center text-yellow-300 mb-6">Sign in to your account</h2>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
+          <form className="space-y-5" onSubmit={handleLogin}>
             <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
+              <label htmlFor="email" className="block text-sm mb-1">Email address</label>
               <input
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 rounded-md bg-white/10 border border-white/30 placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                placeholder="you@example.com"
               />
             </div>
+
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="block text-sm mb-1">Password</label>
               <input
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="current-password"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 rounded-md bg-white/10 border border-white/30 placeholder-white/60 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                placeholder="••••••••"
               />
             </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-yellow-600 focus:ring-yellow-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center space-x-2">
+                <input type="checkbox" className="form-checkbox text-yellow-400" />
+                <span>Remember me</span>
               </label>
+              <a href="/forgot-password" className="text-yellow-400 hover:underline">Forgot your password?</a>
             </div>
 
-            <div className="text-sm">
-              <a href="/forgot-password" className="font-medium text-yellow-600 hover:text-yellow-500">
-                Forgot your password?
-              </a>
-            </div>
-          </div>
-
-          <div>
             <button
               type="submit"
               disabled={loading}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+              className={`w-full py-2 rounded-lg font-semibold text-black bg-yellow-300 hover:bg-yellow-400 transition ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
-              {loading ? (
-                <span>Signing in...</span>
-              ) : (
-                <span>Sign in</span>
-              )}
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
-          </div>
-        </form>
+          </form>
 
-        <div className="text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <a href="/signup" className="font-medium text-yellow-600 hover:text-yellow-500">
-            Sign up
-          </a>
+          <div className="mt-6 text-center text-sm text-white/70">
+            Don't have an account?{' '}
+            <a href="/signup" className="text-yellow-400 hover:underline font-medium">Sign up</a>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
