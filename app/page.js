@@ -30,7 +30,11 @@ const products = [
     name: "Stealth X",
     description: "Ultra-portable and discreet",
     image: "/vape4.png",
-    features: ["Pocket-sized design", "Leak-proof technology", "USB-C charging"],
+    features: [
+      "Pocket-sized design",
+      "Leak-proof technology",
+      "USB-C charging",
+    ],
     price: 39.99,
   },
 ];
@@ -98,29 +102,67 @@ export default function Landing() {
 
       <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 border-b border-white/10 bg-white/10 backdrop-blur-md">
         <div className="flex justify-between items-center">
-          <Link href="/" className="flex items-center space-x-3" aria-label="Home">
-            <Image src="/Logo.png" alt="Vape Vault Logo" width={80} height={80} />
+          <Link
+            href="/"
+            className="flex items-center space-x-3"
+            aria-label="Home"
+          >
+            <Image
+              src="/Logo.png"
+              alt="Vape Vault Logo"
+              width={80}
+              height={80}
+            />
             <h1 className="text-3xl font-bold text-yellow-300">Vape Vault</h1>
           </Link>
           <nav className="space-x-6 text-lg flex items-center">
-            <Link href="/signin" className="text-yellow-400 hover:text-yellow-300 transition">Sign In</Link>
-            <Link href="/signup" className="text-yellow-400 hover:text-yellow-300 transition">Sign Up</Link>
-            <Link href="#products" className="text-white hover:text-gray-300 transition">Products</Link>
-            <Link href="#about" className="text-white hover:text-gray-300 transition">About</Link>
-            <Link href="#contact" className="text-white hover:text-gray-300 transition">Contact</Link>
+            <Link
+              href="/signin"
+              className="text-yellow-400 hover:text-yellow-300 transition"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/signup"
+              className="text-yellow-400 hover:text-yellow-300 transition"
+            >
+              Sign Up
+            </Link>
+            <Link
+              href="#products"
+              className="text-white hover:text-gray-300 transition"
+            >
+              Products
+            </Link>
+            <Link
+              href="#about"
+              className="text-white hover:text-gray-300 transition"
+            >
+              About
+            </Link>
+            <Link
+              href="#contact"
+              className="text-white hover:text-gray-300 transition"
+            >
+              Contact
+            </Link>
           </nav>
         </div>
       </header>
 
       <main className="relative pt-52 px-6 pb-20 text-center overflow-hidden flex-1">
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('/vape_back.png')` }}></div>
-        <div className="absolute inset-0 bg-black/50 z-0"></div>
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('/vape_back.png')` }}
+        ></div>
+        <div className="absolute bg-black/50 z-0"></div>
         <div className="relative z-10 mx-auto max-w-4xl p-8 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg">
           <h2 className="text-5xl font-bold mb-6 text-white drop-shadow-lg">
             Discover Your Next Favorite Vape
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in one place.
+            Premium vape products, stylish designs, and smooth flavors – all in
+            one place.
           </p>
           <Link href="#products">
             <button
@@ -204,7 +246,10 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="about" className="px-6 py-5 text-center bg-white/10 backdrop-blur-md">
+      <section
+        id="about"
+        className="px-6 py-5 text-center bg-white/10 backdrop-blur-md"
+      >
         <h3 className="text-4xl font-semibold mb-6 text-yellow-300">
           About Vape Vault
         </h3>
@@ -215,8 +260,13 @@ export default function Landing() {
         </p>
       </section>
 
-      <section id="contact" className="px-6 py-10 text-center bg-white/10 backdrop-blur-md">
-        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">Contact Us</h3>
+      <section
+        id="contact"
+        className="px-6 py-10 text-center bg-white/10 backdrop-blur-md"
+      >
+        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">
+          Contact Us
+        </h3>
         <p className="text-white/80 text-lg mb-0">
           Have questions or want to collaborate?
         </p>
