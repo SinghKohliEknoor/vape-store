@@ -168,7 +168,7 @@ export default function Home() {
             />
           </div>
 
-        {/* Search Bar (Only after login) */}
+        {/* Search Bar (Only after login)
         <div className="flex-grow max-w-md mx-auto relative">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
           <input
@@ -196,7 +196,7 @@ export default function Home() {
     ease-in-out
   "
           />
-        </div>
+        </div> */}
 
 
           <nav className="space-x-6 text-lg flex items-center">
@@ -224,13 +224,8 @@ export default function Home() {
             Premium vape products, stylish designs, and smooth flavors – all in one place.
           </p>
 
-          <h2 className="text-5xl font-bold mb-4 text-white">
-            Discover Your Next Favorite Vape
-          </h2>
-          <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in
-            one place.
-          </p>
+          
+          
           <Link href="#products">
             <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition">
               Browse Products
