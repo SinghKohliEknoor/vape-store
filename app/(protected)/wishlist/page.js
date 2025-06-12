@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import LoadingSpinner from 'app/components/LoadingSpinner';
 import { HeartIcon } from '@heroicons/react/24/solid';
+import Header from "app/components/Header";
 
 function EmptyWishlist() {
   const router = useRouter();
@@ -111,7 +112,7 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex flex-col">
-      <header className="sticky top-0 z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
+      {/* <header className="sticky top-0 z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center space-x-3">
             <Image src="/Logo.png" alt="Logo" width={80} height={80} priority />
@@ -120,10 +121,11 @@ export default function WishlistPage() {
           <nav className="hidden md:flex items-center space-x-6 text-lg">
             <Link href="/account" className="hover:text-yellow-400">My Account</Link>
             <Link href="/wishlist" className="text-yellow-400 font-medium">Wishlist</Link>
-            <Link href="/cart" className="hover:text-yellow-400">Cart</Link>
-          </nav>
+            <Link href="/cart" className="hover:text-yellow-400">Cart</Link> */}
+            <Header />
+          {/* </nav>
         </div>
-      </header>
+      </header> */}
 
       <main className="flex-1 container mx-auto px-6 py-16">
         <div className="max-w-6xl mx-auto">
@@ -146,7 +148,9 @@ export default function WishlistPage() {
           )}
 
           {wishlistItems.length === 0 ? (
-            <EmptyWishlist />
+            <div className="flex flex-col items-center justify-center h-64 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg">
+              <EmptyWishlist />
+            </div>
           ) : (
             <div className="space-y-6">
               {wishlistItems.map(item => (

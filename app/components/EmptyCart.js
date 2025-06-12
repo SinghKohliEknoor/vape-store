@@ -4,10 +4,10 @@ export default function EmptyCart() {
   const router = useRouter();
 
   return (
-    <div className="text-center py-16 px-6 bg-white/5 backdrop-blur-md border border-white/20 rounded-xl shadow-lg text-white max-w-xl mx-auto">
+    <div className="ml-147 justify-items-center text-center py-16 px-6 bg-white/5 backdrop-blur-md border border-white/20 rounded-xl shadow-lg text-white max-w-xl mx-auto">
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-16 w-16 mx-auto text-white/60"
+        className="h-20 w-20 mx-auto text-white/60"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
