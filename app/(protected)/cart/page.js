@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import LoadingSpinner from 'app/components/LoadingSpinner';
 import EmptyCart from 'app/components/EmptyCart';
+import Header from 'app/components/Header';
 
 export default function CartPage() {
   const [user, setUser] = useState(null);
@@ -160,38 +161,11 @@ export default function CartPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      <header className="sticky top-0 z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
-        <div className="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <Link href="/" className="flex items-center space-x-3">
-            <Image src="/Logo.png" alt="Vape Vault Logo" width={60} height={60} />
-            <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
-          </Link>
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="bg-white/10 border border-white/30 text-white placeholder-white/70 px-4 py-2 rounded-full backdrop-blur-sm w-full max-w-md"
-          />
-          <div className="flex items-center space-x-4">
-            <Link href="/account" className="hover:text-yellow-400">My Account</Link>
-            <Link href="/wishlist" className="hover:text-yellow-400">Wishlist</Link>
-            <Link href="/cart" className="text-yellow-400 font-medium">Cart</Link>
-            <button
-              onClick={async () => {
-                await supabase.auth.signOut();
-                router.push('/');
-              }}
-              className="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold px-4 py-2 rounded-lg"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-        
-      </header>
-
-      <main className="flex-1 container mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold mb-8 text-yellow-300">Your Cart</h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative">
+      <Header />
+      <h1 className="text-3xl  mt-40 font-bold  text-yellow-300 text-center">Your Cart</h1>
+      <main className="flex-1 container mx-30 px-6 py-10 pt-10">
+      
 
         {error && (
           <div className="bg-red-100/10 border-l-4 border-red-400 text-red-300 p-4 mb-6 rounded-lg">
@@ -200,10 +174,12 @@ export default function CartPage() {
         )}
 
         {cartItems.length === 0 ? (
-          <EmptyCart />
+          <div className="flex justify-center items-center w-full h-96">
+            <EmptyCart />
+          </div>
         ) : (
-          <>
-            <div className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-8 mr-40">
+            <div className="flex-1 space-y-6">
               {cartItems.map(item => (
                 <div key={item.id} className="flex flex-col md:flex-row bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-md">
                   <div className="relative w-full md:w-1/4 h-48">
@@ -244,25 +220,27 @@ export default function CartPage() {
               ))}
             </div>
 
-            <div className="mt-10 bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold mb-4 text-yellow-300">Order Summary</h2>
-              <div className="space-y-2 text-white/90">
-                <div className="flex justify-between"><span>Subtotal</span><span>${calculateTotal().toFixed(2)}</span></div>
-                <div className="flex justify-between"><span>Shipping</span><span className="text-green-400">Free</span></div>
-                <hr className="border-white/20 my-2" />
-                <div className="flex justify-between font-semibold text-yellow-400 text-lg">
-                  <span>Total</span><span>${calculateTotal().toFixed(2)}</span>
+            <div className="md:w-96 w-full md:fixed md:bottom-18 md:right-6">
+              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-semibold mb-4 text-yellow-300">Order Summary</h2>
+                <div className="space-y-2 text-white/90">
+                  <div className="flex justify-between"><span>Subtotal</span><span>${calculateTotal().toFixed(2)}</span></div>
+                  <div className="flex justify-between"><span>Shipping</span><span className="text-green-400">Free</span></div>
+                  <hr className="border-white/20 my-2" />
+                  <div className="flex justify-between font-semibold text-yellow-400 text-lg">
+                    <span>Total</span><span>${calculateTotal().toFixed(2)}</span>
+                  </div>
                 </div>
+                <button
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading || cartItems.length === 0}
+                  className={`w-full mt-6 py-3 rounded-lg font-medium text-white transition ${checkoutLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                >
+                  {checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}
+                </button>
               </div>
-              <button
-                onClick={handleCheckout}
-                disabled={checkoutLoading || cartItems.length === 0}
-                className={`w-full mt-6 py-3 rounded-lg font-medium text-white transition ${checkoutLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
-              >
-                {checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}
-              </button>
             </div>
-          </>
+          </div>
         )}
       </main>
 
