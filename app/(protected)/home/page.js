@@ -168,6 +168,37 @@ export default function Home() {
             />
           </div>
 
+        {/* Search Bar (Only after login) */}
+        <div className="flex-grow max-w-md mx-auto relative">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="
+    w-full
+    pl-10
+    pr-10
+    py-2.5
+    text-sm
+    font-medium
+    border border-gray-800
+    rounded-full
+    shadow-sm
+    placeholder-gray-900
+    focus:outline-none
+    focus:ring-2
+    focus:ring-yellow-400
+    focus:border-yellow-400
+    transition
+    duration-300
+    ease-in-out
+  "
+          />
+        </div>
+
+
           <nav className="space-x-6 text-lg flex items-center">
             <Link href="/account" className="hover:text-yellow-400 transition">My Account</Link>
             <Link href="/wishlist" className="hover:text-yellow-400 transition">Wishlist</Link>
@@ -187,9 +218,18 @@ export default function Home() {
         <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('/vape_back.png')` }}></div>
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="relative z-10">
+
           <h2 className="text-5xl font-bold mb-4 text-white">Discover Your Next Favorite Vape</h2>
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-8">
             Premium vape products, stylish designs, and smooth flavors – all in one place.
+          </p>
+
+          <h2 className="text-5xl font-bold mb-4 text-white">
+            Discover Your Next Favorite Vape
+          </h2>
+          <p className="text-xl text-white max-w-2xl mx-auto mb-8">
+            Premium vape products, stylish designs, and smooth flavors – all in
+            one place.
           </p>
           <Link href="#products">
             <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition">
