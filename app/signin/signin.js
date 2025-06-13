@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
 
 export default function SigninPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -31,7 +31,7 @@ export default function SigninPage() {
 
       if (error) throw error;
 
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,10 +50,14 @@ export default function SigninPage() {
 
       <main className="flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl shadow-md p-8">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Sign In to Your Account</h2>
+          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+            Sign In to Your Account
+          </h2>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -92,18 +96,23 @@ export default function SigninPage() {
               disabled={loading}
               className={`w-full py-3 rounded-lg font-medium transition ${
                 loading
-                  ? 'bg-yellow-200 cursor-not-allowed'
-                  : 'bg-[#FFE54D] hover:bg-[#FFD700]'
+                  ? "bg-yellow-200 cursor-not-allowed"
+                  : "bg-[#FFE54D] hover:bg-[#FFD700]"
               }`}
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-600">
             <p>
-              Don't have an account?{' '}
-              <Link href="/signup" className="text-yellow-600 hover:underline font-medium">Sign Up</Link>
+              Don't have an account?{" "}
+              <Link
+                href="/signup"
+                className="text-yellow-600 hover:underline font-medium"
+              >
+                Sign Up
+              </Link>
             </p>
           </div>
         </div>
