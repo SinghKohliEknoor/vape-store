@@ -96,7 +96,7 @@ export default function LoginPage() {
                 <input type="checkbox" className="form-checkbox text-yellow-400" />
                 <span>Remember me</span>
               </label>
-              <a href="/forgot-password" className="text-yellow-400 hover:underline">Forgot your password?</a>
+              <Link href="/forgot-password" className="text-yellow-400 hover:underline">Forgot your password?</Link>
             </div>
 
             <button
@@ -110,7 +110,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm text-white/70">
             Don't have an account?{' '}
-            <a href="/signup" className="text-yellow-400 hover:underline font-medium">Sign up</a>
+            <Link href="/signup" className="text-yellow-400 hover:underline font-medium">Sign up</Link>
           </div>
         </div>
       </main>
