@@ -34,18 +34,7 @@ export default function Header() {
           </Link>
         </div>
 
-        {user && (
-          <div className="w-full max-w-md mx-auto relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 text-sm font-medium bg-white/10 border border-white/30 text-white placeholder-white/70 rounded-full shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 transition duration-300 ease-in-out"
-            />
-          </div>
-        )}
+        
 
         <nav className="space-x-6 text-lg flex items-center justify-center md:justify-end w-full md:w-auto">
           <Link href="/account" className="hover:text-yellow-400">My Account</Link>
