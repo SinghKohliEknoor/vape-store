@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import LoadingSpinner from 'app/components/LoadingSpinner';
 import EmptyCart from 'app/components/EmptyCart';
 import Header from 'app/components/Header';
@@ -77,7 +76,7 @@ export default function CartPage() {
   };
 
   const updateQuantity = async (itemId, change) => {
-    const item = cartItems.find((i) => i.id === itemId);
+    const item = cartItems.find(i => i.id === itemId);
     if (!item) return;
 
     const newQuantity = item.quantity + change;
@@ -99,8 +98,8 @@ export default function CartPage() {
 
       if (error) throw error;
 
-      setCartItems((prev) =>
-        prev.map((i) => (i.id === itemId ? { ...i, quantity: newQuantity } : i))
+      setCartItems(prev =>
+        prev.map(i => (i.id === itemId ? { ...i, quantity: newQuantity } : i))
       );
       setError(null);
     } catch (err) {
@@ -119,7 +118,7 @@ export default function CartPage() {
 
       if (error) throw error;
 
-      setCartItems((prev) => prev.filter((i) => i.id !== itemId));
+      setCartItems(prev => prev.filter(i => i.id !== itemId));
       setError(null);
     } catch (err) {
       setError(err.message || 'Failed to remove item');
@@ -144,7 +143,7 @@ export default function CartPage() {
     }
   };
 
-  const calculateTotal = () => 
+  const calculateTotal = () =>
     cartItems.reduce(
       (total, item) => total + item.quantity * (item.products?.price || 0),
       0
@@ -163,10 +162,10 @@ export default function CartPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative">
       <Header />
-      <h1 className="text-3xl  mt-40 font-bold  text-yellow-300 text-center">Your Cart</h1>
-      <main className="flex-1 container mx-30 px-6 py-10 pt-10">
-      
 
+      <h1 className="text-3xl mt-40 font-bold text-yellow-300 text-center">Your Cart</h1>
+
+      <main className="flex-1 container mx-30 px-6 py-10 pt-10">
         {error && (
           <div className="bg-red-100/10 border-l-4 border-red-400 text-red-300 p-4 mb-6 rounded-lg">
             {error}
@@ -181,7 +180,10 @@ export default function CartPage() {
           <div className="flex flex-col md:flex-row gap-8 mr-40">
             <div className="flex-1 space-y-6">
               {cartItems.map(item => (
-                <div key={item.id} className="flex flex-col md:flex-row bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-md">
+                <div
+                  key={item.id}
+                  className="flex flex-col md:flex-row bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl shadow-md"
+                >
                   <div className="relative w-full md:w-1/4 h-48">
                     <Image
                       src={item.products?.image_url || '/placeholder-product.png'}
@@ -192,8 +194,15 @@ export default function CartPage() {
                   </div>
                   <div className="p-6 flex flex-col flex-1">
                     <div className="flex justify-between">
-                      <h2 className="text-xl font-semibold hover:text-yellow-400 cursor-pointer">{item.products?.name}</h2>
-                      <button onClick={() => deleteItem(item.id)} className="text-gray-400 hover:text-red-400">✕</button>
+                      <h2 className="text-xl font-semibold hover:text-yellow-400 cursor-pointer">
+                        {item.products?.name}
+                      </h2>
+                      <button
+                        onClick={() => deleteItem(item.id)}
+                        className="text-gray-400 hover:text-red-400"
+                      >
+                        ✕
+                      </button>
                     </div>
                     <p className="text-white/70 text-sm">{item.products?.description}</p>
                     <div className="mt-auto flex justify-between items-center">
@@ -202,17 +211,25 @@ export default function CartPage() {
                           onClick={() => updateQuantity(item.id, -1)}
                           disabled={updatingItemId === item.id}
                           className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"
-                        >−</button>
+                        >
+                          −
+                        </button>
                         <span>{item.quantity}</span>
                         <button
                           onClick={() => updateQuantity(item.id, 1)}
                           disabled={updatingItemId === item.id}
                           className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"
-                        >+</button>
+                        >
+                          +
+                        </button>
                       </div>
                       <div className="text-right">
-                        <p className="text-yellow-400 font-medium">${item.products?.price?.toFixed(2)}</p>
-                        <p className="text-green-400 font-semibold">Subtotal: ${(item.quantity * item.products?.price).toFixed(2)}</p>
+                        <p className="text-yellow-400 font-medium">
+                          ${item.products?.price?.toFixed(2)}
+                        </p>
+                        <p className="text-green-400 font-semibold">
+                          Subtotal: ${(item.quantity * item.products?.price).toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -221,20 +238,29 @@ export default function CartPage() {
             </div>
 
             <div className="md:w-96 w-full md:fixed md:bottom-18 md:right-6">
-              <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-lg shadow-md">
+              <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4 text-yellow-300">Order Summary</h2>
                 <div className="space-y-2 text-white/90">
-                  <div className="flex justify-between"><span>Subtotal</span><span>${calculateTotal().toFixed(2)}</span></div>
-                  <div className="flex justify-between"><span>Shipping</span><span className="text-green-400">Free</span></div>
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>${calculateTotal().toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Shipping</span>
+                    <span className="text-green-400">Free</span>
+                  </div>
                   <hr className="border-white/20 my-2" />
                   <div className="flex justify-between font-semibold text-yellow-400 text-lg">
-                    <span>Total</span><span>${calculateTotal().toFixed(2)}</span>
+                    <span>Total</span>
+                    <span>${calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
                 <button
                   onClick={handleCheckout}
                   disabled={checkoutLoading || cartItems.length === 0}
-                  className={`w-full mt-6 py-3 rounded-lg font-medium text-white transition ${checkoutLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                  className={`w-full mt-6 py-3 rounded-lg font-medium text-white transition ${
+                    checkoutLoading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 >
                   {checkoutLoading ? 'Processing...' : 'Proceed to Checkout'}
                 </button>
@@ -244,7 +270,7 @@ export default function CartPage() {
         )}
       </main>
 
-      <footer className="bg-white/10 backdrop-blur-md py-6 text-center text-sm text-white/60 border-t border-white/20">
+      <footer className="bg-white/10 backdrop-blur-lg py-6 text-center text-sm text-white/60 border-t border-white/20">
         © {new Date().getFullYear()} Vape Vault. All rights reserved.
       </footer>
     </div>
