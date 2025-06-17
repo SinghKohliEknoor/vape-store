@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -101,7 +101,7 @@ export default function Home() {
           .select("product_id,quantity")
           .eq("cart_id", cart.id);
         const m = {};
-        items.forEach(i => (m[i.product_id] = i.quantity));
+        items.forEach((i) => (m[i.product_id] = i.quantity));
         setCartMap(m);
       }
     })();
@@ -118,7 +118,7 @@ export default function Home() {
           .from("wishlist_items")
           .select("product_id")
           .eq("wishlist_id", wl.id);
-        setWishlistSet(new Set(witems.map(i => i.product_id)));
+        setWishlistSet(new Set(witems.map((i) => i.product_id)));
       }
     })();
   }, [user]);
@@ -129,7 +129,7 @@ export default function Home() {
   };
 
   // cart operations
-  const addToCart = async pid => {
+  const addToCart = async (pid) => {
     setProcessingId(pid);
     if (!cartId) {
       const { data: newCart } = await supabase
@@ -144,7 +144,7 @@ export default function Home() {
       product_id: pid,
       quantity: 1,
     });
-    setCartMap(m => ({ ...m, [pid]: 1 }));
+    setCartMap((m) => ({ ...m, [pid]: 1 }));
     setProcessingId(null);
   };
   const updateCartQty = async (pid, delta) => {
@@ -154,7 +154,7 @@ export default function Home() {
         .from("cart_items")
         .delete()
         .match({ cart_id: cartId, product_id: pid });
-      setCartMap(m => {
+      setCartMap((m) => {
         const nm = { ...m };
         delete nm[pid];
         return nm;
@@ -164,12 +164,12 @@ export default function Home() {
         .from("cart_items")
         .update({ quantity: newQty })
         .match({ cart_id: cartId, product_id: pid });
-      setCartMap(m => ({ ...m, [pid]: newQty }));
+      setCartMap((m) => ({ ...m, [pid]: newQty }));
     }
   };
 
   // wishlist operations
-  const addToWishlist = async pid => {
+  const addToWishlist = async (pid) => {
     setProcessingId(pid);
     if (!wishlistId) {
       const { data: newWl } = await supabase
@@ -183,16 +183,16 @@ export default function Home() {
       wishlist_id: wishlistId,
       product_id: pid,
     });
-    setWishlistSet(s => new Set(s).add(pid));
+    setWishlistSet((s) => new Set(s).add(pid));
     setProcessingId(null);
   };
-  const removeFromWishlist = async pid => {
+  const removeFromWishlist = async (pid) => {
     setProcessingId(pid);
     await supabase
       .from("wishlist_items")
       .delete()
       .match({ wishlist_id: wishlistId, product_id: pid });
-    setWishlistSet(s => {
+    setWishlistSet((s) => {
       const ns = new Set(s);
       ns.delete(pid);
       return ns;
@@ -200,9 +200,15 @@ export default function Home() {
     setProcessingId(null);
   };
 
-  const filtered = products.filter(p =>
+  const filtered = products.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // when selecting from suggestions
+  const handleSelect = (id) => {
+    setSearchQuery("");
+    router.push(`/product/${id}`);
+  };
 
   if (!user || loading) {
     return (
@@ -215,25 +221,56 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       {/* Floating Glass Header */}
-      <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-white/10 backdrop-blur-lg border border-white/20 px-8 py-4 shadow-2xl rounded-3xl w-[92%] max-w-6xl flex items-center justify-between">
+      <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/60 backdrop-blur-lg border border-white/20 px-8 py-4 shadow-2xl rounded-3xl w-[92%] max-w-6xl flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Image src="/Logo.png" width={60} height={60} alt="Vape Vault" />
           <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
         </div>
+
+        {/* Search + Suggestions */}
         <div className="relative w-full max-w-md mx-8">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
           <input
             type="text"
             placeholder="Search products..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full rounded-full border border-white/30 bg-white/10 px-10 py-2 text-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-sm"
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-full border border-white/30 bg-white/20 px-4 py-2 pl-10 pr-4 text-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-md"
           />
+
+          {/* Search Suggestions */}
+          {searchQuery && filtered.length > 0 && (
+            <ul className="absolute top-full left-0 mt-2 w-full bg-white/20 backdrop-blur-lg border border-white/30 rounded-2xl shadow-lg max-h-64 overflow-y-auto z-50 text-white">
+              {filtered.map((product) => (
+                <li
+                  key={product.id}
+                  onClick={() => handleSelect(product.id)}
+                  className="flex items-center px-4 py-3 hover:bg-white/30 cursor-pointer"
+                >
+                  <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    width={48}
+                    height={48}
+                    className="rounded-md object-cover shrink-0"
+                  />
+                  <span className="ml-4 text-lg">{product.name}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+
         <nav className="flex items-center space-x-6">
-          <Link href="/account" className="hover:text-yellow-400">My Account</Link>
-          <Link href="/wishlist" className="hover:text-yellow-400">Wishlist</Link>
-          <Link href="/cart" className="hover:text-yellow-400">Cart</Link>
+          <Link href="/account" className="hover:text-yellow-400">
+            My Account
+          </Link>
+          <Link href="/wishlist" className="hover:text-yellow-400">
+            Wishlist
+          </Link>
+          <Link href="/cart" className="hover:text-yellow-400">
+            Cart
+          </Link>
           <button
             onClick={handleLogout}
             className="rounded-full bg-yellow-300 px-4 py-2 text-black hover:bg-yellow-400 transition"
@@ -279,13 +316,12 @@ export default function Home() {
           <p className="text-center text-red-400 mb-6">{errorMessage}</p>
         )}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 px-10">
-          {filtered.map(p => (
+          {products.map((p) => (
             <FadeInOnScroll key={p.id}>
               <div
                 onClick={() => router.push(`/product/${p.id}`)}
                 className="cursor-pointer bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition flex flex-col"
               >
-                {/* Dark glass image panel */}
                 <div className="relative h-64 bg-black/20 backdrop-blur-md">
                   <Image
                     src={p.image_url}
@@ -294,17 +330,13 @@ export default function Home() {
                     className="object-contain p-4 transition-transform duration-300 hover:scale-105"
                   />
                 </div>
-                {/* Card content */}
                 <div className="p-4 flex flex-col flex-1">
                   <h4 className="text-xl font-bold mb-2 text-white">{p.name}</h4>
-                  <p className="text-yellow-300 text-lg font-semibold mb-4">
-                    ${p.price}
-                  </p>
                   <div className="mt-auto flex items-center space-x-2">
                     {cartMap[p.id] ? (
                       <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
                         <button
-                          onClick={e => {
+                          onClick={(e) => {
                             e.stopPropagation();
                             updateCartQty(p.id, -1);
                           }}
@@ -314,7 +346,7 @@ export default function Home() {
                         </button>
                         <span className="px-2 text-white">{cartMap[p.id]}</span>
                         <button
-                          onClick={e => {
+                          onClick={(e) => {
                             e.stopPropagation();
                             updateCartQty(p.id, 1);
                           }}
@@ -325,7 +357,7 @@ export default function Home() {
                       </div>
                     ) : (
                       <button
-                        onClick={e => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           addToCart(p.id);
                         }}
@@ -336,7 +368,7 @@ export default function Home() {
                       </button>
                     )}
                     <button
-                      onClick={e => {
+                      onClick={(e) => {
                         e.stopPropagation();
                         wishlistSet.has(p.id)
                           ? removeFromWishlist(p.id)
