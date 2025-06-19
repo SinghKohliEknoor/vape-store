@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -12,11 +12,10 @@ import BrandPromise from "app/components/BrandPromise";
 const products = [
   {
     id: 1,
-    name: "Cloud Chaser Pro",
+    name: "Geek Bar Pulse X",
     description: "Massive vapor production with adjustable airflow",
     image: "/vape1.png",
     features: ["200W max power", "8ml tank capacity", "Triple mesh coils"],
-    price: 69.99,
   },
   {
     id: 2,
@@ -24,15 +23,17 @@ const products = [
     description: "Enhanced flavor delivery system",
     image: "/vape3.png",
     features: ["Ceramic coils", "Precision temperature control", "5ml tank"],
-    price: 74.99,
   },
   {
     id: 3,
-    name: "Stealth X",
+    name: "Drip'n EVO",
     description: "Ultra-portable and discreet",
     image: "/vape4.png",
-    features: ["Pocket-sized design", "Leak-proof technology", "USB-C charging"],
-    price: 39.99,
+    features: [
+      "Pocket-sized design",
+      "Leak-proof technology",
+      "USB-C charging",
+    ],
   },
 ];
 
@@ -101,11 +102,20 @@ export default function Landing() {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           {/* Logo + Search */}
           <div className="flex items-center space-x-4 w-full md:w-auto">
-            <Link href="/" className="flex items-center space-x-3" aria-label="Home">
-              <Image src="/Logo.png" alt="Vape Vault Logo" width={60} height={60} />
+            <Link
+              href="/"
+              className="flex items-center space-x-3"
+              aria-label="Home"
+            >
+              <Image
+                src="/Logo.png"
+                alt="Vape Vault Logo"
+                width={60}
+                height={60}
+              />
               <h1 className="text-3xl font-bold text-yellow-300">Vape Vault</h1>
             </Link>
-            <div className="relative w-full max-w-xs">
+            {/* <div className="relative w-full max-w-xs">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
               <input
                 type="text"
@@ -127,15 +137,40 @@ export default function Landing() {
                   ))}
                 </ul>
               )}
-            </div>
+            </div> */}
           </div>
 
           <nav className="space-x-6 text-lg flex items-center justify-center md:justify-end w-full md:w-auto">
-            <Link href="/signin" className="text-yellow-400 hover:text-yellow-300 transition">Sign In</Link>
-            <Link href="/signup" className="text-yellow-400 hover:text-yellow-300 transition">Sign Up</Link>
-            <Link href="#products" className="text-white hover:text-gray-300 transition">Products</Link>
-            <Link href="#about" className="text-white hover:text-gray-300 transition">About</Link>
-            <Link href="#contact" className="text-white hover:text-gray-300 transition">Contact</Link>
+            <Link
+              href="/signin"
+              className="text-yellow-400 hover:text-yellow-300 transition"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/signup"
+              className="text-yellow-400 hover:text-yellow-300 transition"
+            >
+              Sign Up
+            </Link>
+            <Link
+              href="#products"
+              className="text-white hover:text-gray-300 transition"
+            >
+              Products
+            </Link>
+            <Link
+              href="#about"
+              className="text-white hover:text-gray-300 transition"
+            >
+              About
+            </Link>
+            <Link
+              href="#contact"
+              className="text-white hover:text-gray-300 transition"
+            >
+              Contact
+            </Link>
           </nav>
         </div>
       </header>
@@ -152,7 +187,8 @@ export default function Landing() {
             Discover Your Next Favorite Vape
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in one place.
+            Premium vape products, stylish designs, and smooth flavors – all in
+            one place.
           </p>
           <Link href="#products">
             <button
@@ -198,9 +234,6 @@ export default function Landing() {
                     {product.name}
                   </h4>
                   <p className="text-white/80 mb-2">{product.description}</p>
-                  <p className="text-yellow-400 font-semibold mb-4">
-                    ${product.price.toFixed(2)}
-                  </p>
                   <ul className="text-white/70 text-sm mb-6 space-y-1 flex-1">
                     {product.features.map((feature, i) => (
                       <li key={i} className="flex items-center">
@@ -238,18 +271,35 @@ export default function Landing() {
       </section>
 
       {/* About */}
-      <section id="about" className="px-6 py-5 text-center bg-white/10 backdrop-blur-md">
-        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">About Vape Vault</h3>
+      <section
+        id="about"
+        className="px-6 py-5 text-center bg-white/10 backdrop-blur-md"
+      >
+        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">
+          About Vape Vault
+        </h3>
         <p className="max-w-3xl mx-auto text-white/80 text-lg">
-          At Vape Vault, we’re passionate about providing the best vaping experience. Our products are tested, stylish, and built for your lifestyle.
+          At Vape Vault, we’re passionate about providing the best vaping
+          experience. Our products are tested, stylish, and built for your
+          lifestyle.
         </p>
       </section>
 
       {/* Contact */}
-      <section id="contact" className="px-6 py-10 text-center bg-white/10 backdrop-blur-md">
-        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">Contact Us</h3>
-        <p className="text-white/80 text-lg mb-2">Have questions or want to collaborate?</p>
-        <a href="mailto:support@vapevault.com" className="text-yellow-400 hover:underline text-xl">
+      <section
+        id="contact"
+        className="px-6 py-10 text-center bg-white/10 backdrop-blur-md"
+      >
+        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">
+          Contact Us
+        </h3>
+        <p className="text-white/80 text-lg mb-2">
+          Have questions or want to collaborate?
+        </p>
+        <a
+          href="mailto:support@vapevault.com"
+          className="text-yellow-400 hover:underline text-xl"
+        >
           support@vapevault.com
         </a>
       </section>

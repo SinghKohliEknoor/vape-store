@@ -14,7 +14,6 @@ import {
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 import BrandPromise from "app/components/BrandPromise";
 
-// FadeInOnScroll — wraps children and fades them in when scrolled into view
 function FadeInOnScroll({ children }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -51,7 +50,6 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // cart & wishlist state
   const [cartId, setCartId] = useState(null);
   const [cartMap, setCartMap] = useState({});
   const [wishlistId, setWishlistId] = useState(null);
@@ -60,8 +58,9 @@ export default function Home() {
   const [processingId, setProcessingId] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [brandFilter, setBrandFilter] = useState(""); // NEW
 
-  // auth guard + load user
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) return router.push("/signin");
@@ -74,7 +73,6 @@ export default function Home() {
     return () => sub?.subscription.unsubscribe();
   }, [router]);
 
-  // fetch products once
   useEffect(() => {
     (async () => {
       const { data, error } = await supabase.from("products").select("*");
@@ -84,10 +82,8 @@ export default function Home() {
     })();
   }, []);
 
-  // fetch cart + wishlist once user is known
   useEffect(() => {
     if (!user) return;
-
     (async () => {
       const { data: cart } = await supabase
         .from("carts")
@@ -105,7 +101,6 @@ export default function Home() {
         setCartMap(m);
       }
     })();
-
     (async () => {
       const { data: wl } = await supabase
         .from("wishlists")
@@ -128,7 +123,6 @@ export default function Home() {
     router.push("/");
   };
 
-  // cart operations
   const addToCart = async (pid) => {
     setProcessingId(pid);
     if (!cartId) {
@@ -168,7 +162,6 @@ export default function Home() {
     }
   };
 
-  // wishlist operations
   const addToWishlist = async (pid) => {
     setProcessingId(pid);
     if (!wishlistId) {
@@ -200,15 +193,21 @@ export default function Home() {
     setProcessingId(null);
   };
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // when selecting from suggestions
-  const handleSelect = (id) => {
-    setSearchQuery("");
-    router.push(`/product/${id}`);
-  };
+  // Filter and Sort
+  const filtered = products.filter((p) => {
+    const matchesSearch = p.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesBrand = brandFilter ? p.brand === brandFilter : true;
+    return matchesSearch && matchesBrand;
+  });
+  const sorted = [...filtered];
+  if (sortBy === "priceAsc") sorted.sort((a, b) => a.price - b.price);
+  else if (sortBy === "priceDesc") sorted.sort((a, b) => b.price - a.price);
+  else if (sortBy === "nameAsc")
+    sorted.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortBy === "nameDesc")
+    sorted.sort((a, b) => b.name.localeCompare(a.name));
 
   if (!user || loading) {
     return (
@@ -220,47 +219,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-      {/* Floating Glass Header */}
+      {/* Header */}
       <header className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-black/60 backdrop-blur-lg border border-white/20 px-8 py-4 shadow-2xl rounded-3xl w-[92%] max-w-6xl flex items-center justify-between">
         <div className="flex items-center space-x-3">
           <Image src="/Logo.png" width={60} height={60} alt="Vape Vault" />
           <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
         </div>
-
-        {/* Search + Suggestions */}
-        <div className="relative w-full max-w-md mx-8">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-full border border-white/30 bg-white/20 px-4 py-2 pl-10 pr-4 text-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-md"
-          />
-
-          {/* Search Suggestions */}
-          {searchQuery && filtered.length > 0 && (
-            <ul className="absolute top-full left-0 mt-2 w-full bg-white/20 backdrop-blur-lg border border-white/30 rounded-2xl shadow-lg max-h-64 overflow-y-auto z-50 text-white">
-              {filtered.map((product) => (
-                <li
-                  key={product.id}
-                  onClick={() => handleSelect(product.id)}
-                  className="flex items-center px-4 py-3 hover:bg-white/30 cursor-pointer"
-                >
-                  <Image
-                    src={product.image_url}
-                    alt={product.name}
-                    width={48}
-                    height={48}
-                    className="rounded-md object-cover shrink-0"
-                  />
-                  <span className="ml-4 text-lg">{product.name}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
         <nav className="flex items-center space-x-6">
           <Link href="/account" className="hover:text-yellow-400">
             My Account
@@ -292,10 +256,11 @@ export default function Home() {
             Discover Your Next Favorite Vape
           </h2>
           <p className="text-xl text-white max-w-2xl mx-auto mb-8">
-            Premium vape products, stylish designs, and smooth flavors – all in one place.
+            Premium vape products, stylish designs, and smooth flavors – all in
+            one place.
           </p>
           <Link href="#products">
-            <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black">
+            <button className="bg-yellow-300 hover:bg-yellow-400 px-6 py-3 rounded-full text-lg font-medium text-black transition">
               Browse Products
             </button>
           </Link>
@@ -307,16 +272,58 @@ export default function Home() {
         <BrandPromise />
       </section>
 
-      {/* Products Grid */}
+      {/* Search + Filters */}
       <section id="products" className="px-6 pb-20">
-        <h3 className="text-center text-4xl font-semibold text-yellow-300 mb-12">
-          Our Collection
-        </h3>
+        <div className="flex flex-col items-center space-y-6 mt-6 sm:mt-12 mb-10 px-4">
+          {/* Search */}
+          <div className="relative w-full max-w-md">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full border border-white/30 bg-white/20 px-4 py-2 pl-10 text-sm text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-md transition"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="bg-black/50 backdrop-blur-md border border-white/30 text-white text-sm rounded-full px-4 py-2"
+            >
+              <option value="">Sort by</option>
+              <option value="priceAsc">Price: Low → High</option>
+              <option value="priceDesc">Price: High → Low</option>
+              <option value="nameAsc">Name: A → Z</option>
+              <option value="nameDesc">Name: Z → A</option>
+            </select>
+
+            <select
+              value={brandFilter}
+              onChange={(e) => setBrandFilter(e.target.value)}
+              className="bg-black/50 backdrop-blur-md border border-white/30 text-white text-sm rounded-full px-4 py-2"
+            >
+              <option value="">All Brands</option>
+              {[...new Set(products.map((p) => p.brand))].map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Error Message */}
         {errorMessage && (
           <p className="text-center text-red-400 mb-6">{errorMessage}</p>
         )}
+
+        {/* Products Grid */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 px-10">
-          {products.map((p) => (
+          {sorted.map((p) => (
             <FadeInOnScroll key={p.id}>
               <div
                 onClick={() => router.push(`/product/${p.id}`)}
@@ -331,7 +338,9 @@ export default function Home() {
                   />
                 </div>
                 <div className="p-4 flex flex-col flex-1">
-                  <h4 className="text-xl font-bold mb-2 text-white">{p.name}</h4>
+                  <h4 className="text-xl font-bold mb-2 text-white">
+                    {p.name}
+                  </h4>
                   <div className="mt-auto flex items-center space-x-2">
                     {cartMap[p.id] ? (
                       <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
