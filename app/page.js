@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import BrandPromise from "app/components/BrandPromise";
+import SiteFooter from "./components/SiteFooter";
 
 const products = [
   {
@@ -304,9 +305,7 @@ export default function Landing() {
         </a>
       </section>
 
-      <footer className="bg-white/10 backdrop-blur-md text-white/60 text-center p-6 text-sm border-t border-white/10">
-        &copy; {new Date().getFullYear()} Vape Vault. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Header from 'app/components/Header';
-import LoadingSpinner from 'app/components/LoadingSpinner';
-import { HeartIcon } from '@heroicons/react/24/solid';
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Header from "app/components/Header";
+import LoadingSpinner from "app/components/LoadingSpinner";
+import { HeartIcon } from "@heroicons/react/24/solid";
+import SiteFooter from "@/app/components/SiteFooter";
 
 function EmptyWishlist() {
   const router = useRouter();
@@ -15,7 +16,7 @@ function EmptyWishlist() {
       <HeartIcon className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
       <p className="text-white text-lg mb-4">Your wishlist is empty.</p>
       <button
-        onClick={() => router.push('/')}
+        onClick={() => router.push("/")}
         className="inline-block bg-yellow-500 text-black px-6 py-2 rounded-md font-medium hover:bg-yellow-600 transition"
       >
         Browse Products
@@ -35,15 +36,15 @@ export default function WishlistPage() {
     (async () => {
       const { data: auth, error: authErr } = await supabase.auth.getUser();
       if (authErr || !auth?.user) {
-        router.push('/signin?redirect=/wishlist');
+        router.push("/signin?redirect=/wishlist");
         return;
       }
       setUser(auth.user);
 
       const { data: wl, error: wlErr } = await supabase
-        .from('wishlists')
-        .select('id')
-        .eq('user_id', auth.user.id)
+        .from("wishlists")
+        .select("id")
+        .eq("user_id", auth.user.id)
         .single();
       if (wlErr || !wl) {
         setItems([]);
@@ -52,8 +53,9 @@ export default function WishlistPage() {
       }
 
       const { data: witems, error: itemsErr } = await supabase
-        .from('wishlist_items')
-        .select(`
+        .from("wishlist_items")
+        .select(
+          `
           id,
           products:products (
             id,
@@ -63,14 +65,15 @@ export default function WishlistPage() {
             price,
             stock_quantity
           )
-        `)
-        .eq('wishlist_id', wl.id);
+        `
+        )
+        .eq("wishlist_id", wl.id);
 
       if (itemsErr) {
         setError(itemsErr.message);
         setItems([]);
       } else {
-        setItems(witems.filter(wi => wi.products));
+        setItems(witems.filter((wi) => wi.products));
       }
       setLoading(false);
     })();
@@ -78,8 +81,8 @@ export default function WishlistPage() {
 
   const deleteItem = async (id) => {
     try {
-      await supabase.from('wishlist_items').delete().eq('id', id);
-      setItems(prev => prev.filter(i => i.id !== id));
+      await supabase.from("wishlist_items").delete().eq("id", id);
+      setItems((prev) => prev.filter((i) => i.id !== id));
     } catch (e) {
       setError(e.message);
     }
@@ -122,7 +125,7 @@ export default function WishlistPage() {
               >
                 <div className="relative w-full md:w-1/4 h-48 bg-gray-900">
                   <Image
-                    src={products.image_url || '/placeholder-product.png'}
+                    src={products.image_url || "/placeholder-product.png"}
                     alt={products.name}
                     fill
                     className="object-contain p-4 cursor-pointer"
@@ -170,9 +173,7 @@ export default function WishlistPage() {
         )}
       </main>
 
-      <footer className="bg-white/10 backdrop-blur-lg py-6 text-center text-sm text-white/60 border-t border-white/20">
-        © {new Date().getFullYear()} Vape Vault. All rights reserved.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

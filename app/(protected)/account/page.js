@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Header from "app/components/Header";
+import SiteFooter from "@/app/components/SiteFooter";
 
 export default function MyAccountPage() {
   const router = useRouter();
@@ -36,9 +37,7 @@ export default function MyAccountPage() {
 
       setProfile({
         full_name:
-          userProfile?.full_name ||
-          currentUser.user_metadata?.full_name ||
-          "",
+          userProfile?.full_name || currentUser.user_metadata?.full_name || "",
         email: userProfile?.email || currentUser.email || "",
         phone_number: userProfile?.phone_number || "",
         address: userProfile?.address || "",
@@ -60,10 +59,7 @@ export default function MyAccountPage() {
     setSaving(true);
 
     const updates = {};
-    if (
-      profile.full_name !==
-      (user.user_metadata?.full_name || "")
-    ) {
+    if (profile.full_name !== (user.user_metadata?.full_name || "")) {
       updates.data = { full_name: profile.full_name };
     }
     if (password) {
@@ -184,9 +180,7 @@ export default function MyAccountPage() {
         </div>
       </main>
 
-      <footer className="bg-white/10 backdrop-blur-lg text-white/60 text-center p-4 border-t border-white/10 text-sm">
-        &copy; {new Date().getFullYear()} Vape Vault.
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
@@ -202,10 +196,7 @@ function InputField({
 }) {
   return (
     <div>
-      <label
-        htmlFor={id}
-        className="block mb-1 font-medium text-white"
-      >
+      <label htmlFor={id} className="block mb-1 font-medium text-white">
         {label}
       </label>
       <input
@@ -228,10 +219,7 @@ function InputField({
 function TextareaField({ label, id, value, onChange }) {
   return (
     <div>
-      <label
-        htmlFor={id}
-        className="block mb-1 font-medium text-white"
-      >
+      <label htmlFor={id} className="block mb-1 font-medium text-white">
         {label}
       </label>
       <textarea

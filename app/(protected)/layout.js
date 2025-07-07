@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import ChatWidget from "app/components/ChatWidget";
 
 export default function ProtectedLayout({ children }) {
   const [loading, setLoading] = useState(true);
@@ -31,5 +32,10 @@ export default function ProtectedLayout({ children }) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <ChatWidget />
+    </>
+  );
 }
