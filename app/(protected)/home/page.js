@@ -861,12 +861,12 @@ export default function Home() {
         </section>
 
         {/* ——— Shop by Category ——— */}
-        <section id="shop" className="py-16 px-6 sm:px-8 lg:px-10">
+        <section id="shop" className="py-16 px-6 sm:px-8 xl:px-20">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
               Shop by Category
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-6">
               {categories.map((cat) => (
                 <FadeInOnScroll key={cat.id}>
                   <div
