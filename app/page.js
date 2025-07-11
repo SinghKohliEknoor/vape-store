@@ -287,23 +287,6 @@ export default function Landing() {
       </section>
 
       {/* Contact */}
-      <section
-        id="contact"
-        className="px-6 py-10 text-center bg-white/10 backdrop-blur-md"
-      >
-        <h3 className="text-4xl font-semibold mb-6 text-yellow-300">
-          Contact Us
-        </h3>
-        <p className="text-white/80 text-lg mb-2">
-          Have questions or want to collaborate?
-        </p>
-        <a
-          href="mailto:support@vapevault.com"
-          className="text-yellow-400 hover:underline text-xl"
-        >
-          support@vapevault.com
-        </a>
-      </section>
 
       <SiteFooter />
     </div>
