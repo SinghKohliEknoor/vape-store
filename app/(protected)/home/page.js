@@ -1,9 +1,9 @@
 "use client";
 
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   HeartIcon as HeartOutline,
@@ -48,17 +48,22 @@ function FadeInOnScroll({ children }) {
 
 export default function Home() {
   const router = useRouter();
+
+  // — auth & loading
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [categories, setCategories] = useState([]);
+  // — data
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
 
+  // — cart & wishlist
   const [cartId, setCartId] = useState(null);
   const [cartMap, setCartMap] = useState({});
   const [wishlistId, setWishlistId] = useState(null);
   const [wishlistSet, setWishlistSet] = useState(new Set());
 
+  // — UI state
   const [processingId, setProcessingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
@@ -66,11 +71,11 @@ export default function Home() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [showFilterMenu, setShowFilterMenu] = useState(false);
 
-  // Auth guard
+  // — session check
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) return router.replace("/signin");
-      setUser(data.session.user);
+      if (!data.session) router.replace("/signin");
+      else setUser(data.session.user);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_, session) => {
       if (!session) router.replace("/signin");
@@ -79,7 +84,7 @@ export default function Home() {
     return () => sub?.subscription.unsubscribe();
   }, [router]);
 
-  // Fetch categories + products
+  // — fetch products + categories
   useEffect(() => {
     (async () => {
       const [pRes, cRes] = await Promise.all([
@@ -92,7 +97,7 @@ export default function Home() {
     })();
   }, []);
 
-  // Fetch cart + wishlist
+  // — fetch cart + wishlist
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -134,7 +139,7 @@ export default function Home() {
     router.replace("/");
   };
 
-  // Cart ops
+  // — cart ops
   const addToCart = async (pid) => {
     setProcessingId(pid);
     const prod = products.find((p) => p.id === pid);
@@ -152,11 +157,9 @@ export default function Home() {
         .single();
       setCartId(nc.id);
     }
-    await supabase.from("cart_items").insert({
-      cart_id: cartId,
-      product_id: pid,
-      quantity: 1,
-    });
+    await supabase
+      .from("cart_items")
+      .insert({ cart_id: cartId, product_id: pid, quantity: 1 });
     setCartMap((m) => ({ ...m, [pid]: now + 1 }));
     setProcessingId(null);
   };
@@ -183,7 +186,7 @@ export default function Home() {
     }
   };
 
-  // Wishlist ops
+  // — wishlist ops
   const addToWishlist = async (pid) => {
     setProcessingId(pid);
     if (!wishlistId) {
@@ -214,31 +217,23 @@ export default function Home() {
     setProcessingId(null);
   };
 
-  // Filtering + sorting
-  let visibleProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // — brandOptions
+  const brandOptions = Array.from(
+    new Set(products.map((p) => p.brand).filter(Boolean))
   );
-  if (categoryFilter)
-    visibleProducts = visibleProducts.filter(
-      (p) => p.category_id === categoryFilter
-    );
-  if (brandFilter)
-    visibleProducts = visibleProducts.filter((p) => p.brand === brandFilter);
-  if (sortBy === "priceAsc") visibleProducts.sort((a, b) => a.price - b.price);
-  else if (sortBy === "priceDesc")
-    visibleProducts.sort((a, b) => b.price - a.price);
-  else if (sortBy === "nameAsc")
-    visibleProducts.sort((a, b) => a.name.localeCompare(b.name));
-  else if (sortBy === "nameDesc")
-    visibleProducts.sort((a, b) => b.name.localeCompare(a.name));
 
-  const brandOptions = [
-    ...new Set(
-      products
-        .filter((p) => !categoryFilter || p.category_id === categoryFilter)
-        .map((p) => p.brand)
-    ),
-  ];
+  // — suggestions for dropdown
+  const suggestions = products
+    .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((p) => (categoryFilter ? p.category_id === categoryFilter : true))
+    .filter((p) => (brandFilter ? p.brand === brandFilter : true))
+    .sort((a, b) => {
+      if (sortBy === "priceAsc") return a.price - b.price;
+      if (sortBy === "priceDesc") return b.price - a.price;
+      if (sortBy === "nameAsc") return a.name.localeCompare(b.name);
+      if (sortBy === "nameDesc") return b.name.localeCompare(a.name);
+      return 0;
+    });
 
   if (!user || loading) {
     return (
@@ -250,12 +245,15 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
-      {/* ——— Header (search + nav) ——— */}
-      <header className="fixed inset-x-0 top-4 z-50 w-[92%] max-w-6xl mx-auto bg-black/60 backdrop-blur-lg border border-white/20 rounded-3xl px-8 py-4 flex items-center justify-between shadow-2xl">
+      {/* — Header */}
+      <header className="fixed inset-x-0 top-4 z-50 mx-auto w-[92%] max-w-6xl bg-black/60 backdrop-blur-lg border border-white/20 rounded-3xl px-8 py-4 flex items-center justify-between shadow-2xl">
+        {/* Logo */}
         <div className="flex items-center space-x-3">
           <Image src="/Logo.png" width={60} height={60} alt="Vape Vault" />
           <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
         </div>
+
+        {/* Search + Filters */}
         <div className="relative w-full max-w-lg mx-4">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
           <input
@@ -269,8 +267,10 @@ export default function Home() {
             onClick={() => setShowFilterMenu((v) => !v)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white cursor-pointer"
           />
+
+          {/* Filter menu (z-60) */}
           {showFilterMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-black text-white border border-white/30 rounded-xl p-4 z-50 shadow-xl">
+            <div className="absolute right-0 mt-2 w-64 bg-black text-white border border-white/30 rounded-xl p-4 z-60 shadow-xl">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -303,15 +303,47 @@ export default function Home() {
                 className="w-full rounded bg-black border border-white/20 p-2 text-sm"
               >
                 <option value="">All Brands</option>
-                {brandOptions.map((b, i) => (
-                  <option key={i} value={b}>
+                {brandOptions.map((b) => (
+                  <option key={b} value={b}>
                     {b}
                   </option>
                 ))}
               </select>
             </div>
           )}
+
+          {/* Suggestions dropdown (z-60) */}
+          {searchQuery && suggestions.length > 0 && (
+            <div className="absolute mt-2 w-full bg-black border border-white/20 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+              {suggestions.slice(0, 5).map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center p-2 hover:bg-white/10 cursor-pointer"
+                  onClick={() => {
+                    router.push(`/product/${p.id}`);
+                    setSearchQuery("");
+                  }}
+                >
+                  <Image
+                    src={p.image_url}
+                    alt={p.name}
+                    width={40}
+                    height={40}
+                    className="rounded"
+                  />
+                  <div className="ml-3 flex-1">
+                    <div className="text-white">{p.name}</div>
+                    <div className="text-yellow-300 text-sm">
+                      ${p.price.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Nav */}
         <nav className="flex items-center space-x-6 text-lg">
           <Link href="/account" className="hover:text-yellow-400">
             My Account
@@ -331,8 +363,8 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="pt-32 flex-1">
-        {/* ——— Hero ——— */}
+      <main className="pt-32">
+        {/* Hero */}
         <section
           className="relative h-[500px] bg-cover bg-center"
           style={{ backgroundImage: `url('/vape_back.png')` }}
@@ -354,12 +386,12 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ——— Brand Promise (fullscreen) ——— */}
+        {/* BrandPromise full width */}
         <section className="w-full py-16 bg-gray-900">
           <BrandPromise />
         </section>
 
-        {/* ——— Shop by Category ——— */}
+        {/* Shop by Category */}
         <section id="shop" className="py-16 px-6 sm:px-8 xl:px-20">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
@@ -391,14 +423,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ——— Our Collection ——— */}
+        {/* Our Collection */}
         <section id="products" className="py-16 px-6 sm:px-8 lg:px-10">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
               Our Collection
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {visibleProducts.map((p) => (
+              {products.map((p) => (
                 <FadeInOnScroll key={p.id}>
                   <div
                     onClick={() => router.push(`/product/${p.id}`)}
@@ -491,7 +523,7 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ——— Footer ——— */}
+      {/* Footer */}
       <SiteFooter />
     </div>
   );
