@@ -1,3 +1,4 @@
+// app/(protected)/home/page.js
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -53,6 +54,9 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // — role check for Admin link
+  const [userRole, setUserRole] = useState(null);
+
   // — data
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -62,9 +66,9 @@ export default function Home() {
   const [cartMap, setCartMap] = useState({});
   const [wishlistId, setWishlistId] = useState(null);
   const [wishlistSet, setWishlistSet] = useState(new Set());
+  const [processingId, setProcessingId] = useState(null);
 
   // — UI state
-  const [processingId, setProcessingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
@@ -74,17 +78,40 @@ export default function Home() {
   // — session check
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.replace("/signin");
-      else setUser(data.session.user);
+      if (!data.session) {
+        router.replace("/signin");
+      } else {
+        setUser(data.session.user);
+        // fetch user role
+        supabase
+          .from("users")
+          .select("role")
+          .eq("id", data.session.user.id)
+          .single()
+          .then(({ data: d }) => {
+            if (d?.role) setUserRole(d.role);
+          });
+      }
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_, session) => {
-      if (!session) router.replace("/signin");
-      else setUser(session.user);
+    const { data: sub } = supabase.auth.onAuthStateChange((_, sess) => {
+      if (!sess) {
+        router.replace("/signin");
+      } else {
+        setUser(sess.user);
+        supabase
+          .from("users")
+          .select("role")
+          .eq("id", sess.user.id)
+          .single()
+          .then(({ data: d }) => {
+            if (d?.role) setUserRole(d.role);
+          });
+      }
     });
     return () => sub?.subscription.unsubscribe();
   }, [router]);
 
-  // — fetch products + categories
+  // — fetch products & categories
   useEffect(() => {
     (async () => {
       const [pRes, cRes] = await Promise.all([
@@ -97,7 +124,7 @@ export default function Home() {
     })();
   }, []);
 
-  // — fetch cart + wishlist
+  // — fetch cart & wishlist
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -134,6 +161,7 @@ export default function Home() {
     })();
   }, [user]);
 
+  // — logout
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.replace("/");
@@ -217,12 +245,10 @@ export default function Home() {
     setProcessingId(null);
   };
 
-  // — brandOptions
+  // — dropdown logic
   const brandOptions = Array.from(
     new Set(products.map((p) => p.brand).filter(Boolean))
   );
-
-  // — suggestions for dropdown
   const suggestions = products
     .filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .filter((p) => (categoryFilter ? p.category_id === categoryFilter : true))
@@ -245,126 +271,134 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
-      {/* — Header */}
-      <header className="fixed inset-x-0 top-4 z-50 mx-auto w-[92%] max-w-6xl bg-black/60 backdrop-blur-lg border border-white/20 rounded-3xl px-8 py-4 flex items-center justify-between shadow-2xl">
-        {/* Logo */}
-        <div className="flex items-center space-x-3">
-          <Image src="/Logo.png" width={60} height={60} alt="Vape Vault" />
-          <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
-        </div>
+      {/* ——— Header ——— */}
+      <header className="fixed inset-x-0 top-4 z-50 px-4">
+        <div className="mx-auto w-full max-w-screen-xl bg-black/60 backdrop-blur-lg border border-white/20 rounded-3xl flex items-center justify-between px-8 py-4 shadow-2xl">
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <Image src="/Logo.png" width={60} height={60} alt="Vape Vault" />
+            <h1 className="text-2xl font-bold text-yellow-300">Vape Vault</h1>
+          </div>
 
-        {/* Search + Filters */}
-        <div className="relative w-full max-w-lg mx-4">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
-          <input
-            type="text"
-            placeholder="Search products…"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-10 py-2 rounded-full bg-white/20 border border-white/30 placeholder-white/60 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          />
-          <EllipsisVerticalIcon
-            onClick={() => setShowFilterMenu((v) => !v)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white cursor-pointer"
-          />
+          {/* Search + Filters */}
+          <div className="relative flex-1 max-w-lg mx-4">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/60" />
+            <input
+              type="text"
+              placeholder="Search products…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-10 py-2 rounded-full bg-white/20 border border-white/30 placeholder-white/60 text-white text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            />
+            <EllipsisVerticalIcon
+              onClick={() => setShowFilterMenu((v) => !v)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white cursor-pointer"
+            />
 
-          {/* Filter menu (z-60) */}
-          {showFilterMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-black text-white border border-white/30 rounded-xl p-4 z-60 shadow-xl">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full mb-2 rounded bg-black border border-white/20 p-2 text-sm"
-              >
-                <option value="">Sort by…</option>
-                <option value="priceAsc">Price: Low → High</option>
-                <option value="priceDesc">Price: High → Low</option>
-                <option value="nameAsc">Name: A → Z</option>
-                <option value="nameDesc">Name: Z → A</option>
-              </select>
-              <select
-                value={categoryFilter}
-                onChange={(e) => {
-                  setCategoryFilter(e.target.value);
-                  setBrandFilter("");
-                }}
-                className="w-full mb-2 rounded bg-black border border-white/20 p-2 text-sm"
-              >
-                <option value="">All Categories</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={brandFilter}
-                onChange={(e) => setBrandFilter(e.target.value)}
-                className="w-full rounded bg-black border border-white/20 p-2 text-sm"
-              >
-                <option value="">All Brands</option>
-                {brandOptions.map((b) => (
-                  <option key={b} value={b}>
-                    {b}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Suggestions dropdown (z-60) */}
-          {searchQuery && suggestions.length > 0 && (
-            <div className="absolute mt-2 w-full bg-black border border-white/20 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-              {suggestions.slice(0, 5).map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center p-2 hover:bg-white/10 cursor-pointer"
-                  onClick={() => {
-                    router.push(`/product/${p.id}`);
-                    setSearchQuery("");
-                  }}
+            {/* Filter Menu */}
+            {showFilterMenu && (
+              <div className="absolute right-0 mt-2 w-64 bg-black text-white border border-white/30 rounded-xl p-4 z-50 shadow-xl">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full mb-2 rounded bg-black border border-white/20 p-2 text-sm"
                 >
-                  <Image
-                    src={p.image_url}
-                    alt={p.name}
-                    width={40}
-                    height={40}
-                    className="rounded"
-                  />
-                  <div className="ml-3 flex-1">
-                    <div className="text-white">{p.name}</div>
-                    <div className="text-yellow-300 text-sm">
-                      ${p.price.toFixed(2)}
+                  <option value="">Sort by…</option>
+                  <option value="priceAsc">Price: Low → High</option>
+                  <option value="priceDesc">Price: High → Low</option>
+                  <option value="nameAsc">Name: A → Z</option>
+                  <option value="nameDesc">Name: Z → A</option>
+                </select>
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => {
+                    setCategoryFilter(e.target.value);
+                    setBrandFilter("");
+                  }}
+                  className="w-full mb-2 rounded bg-black border border-white/20 p-2 text-sm"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={brandFilter}
+                  onChange={(e) => setBrandFilter(e.target.value)}
+                  className="w-full rounded bg-black border border-white/20 p-2 text-sm"
+                >
+                  <option value="">All Brands</option>
+                  {brandOptions.map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Suggestions Dropdown */}
+            {searchQuery && suggestions.length > 0 && (
+              <div className="absolute mt-2 w-full bg-black border border-white/20 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                {suggestions.slice(0, 5).map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center p-2 hover:bg-white/10 cursor-pointer"
+                    onClick={() => {
+                      router.push(`/product/${p.id}`);
+                      setSearchQuery("");
+                    }}
+                  >
+                    <Image
+                      src={p.image_url}
+                      alt={p.name}
+                      width={40}
+                      height={40}
+                      className="rounded"
+                    />
+                    <div className="ml-3 flex-1">
+                      <div className="text-white">{p.name}</div>
+                      <div className="text-yellow-300 text-sm">
+                        ${p.price.toFixed(2)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-        {/* Nav */}
-        <nav className="flex items-center space-x-6 text-lg">
-          <Link href="/account" className="hover:text-yellow-400">
-            My Account
-          </Link>
-          <Link href="/wishlist" className="hover:text-yellow-400">
-            Wishlist
-          </Link>
-          <Link href="/cart" className="hover:text-yellow-400">
-            Cart
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
-          >
-            Logout
-          </button>
-        </nav>
+          {/* Nav */}
+          <nav className="flex items-center space-x-8 text-lg">
+            <Link href="/account" className="hover:text-yellow-400">
+              My Account
+            </Link>
+            <Link href="/wishlist" className="hover:text-yellow-400">
+              Wishlist
+            </Link>
+            <Link href="/cart" className="hover:text-yellow-400">
+              Cart
+            </Link>
+            {/* only show for admins */}
+            {userRole === "admin" && (
+              <Link href="/admin" className="hover:text-yellow-400 text-lg">
+                Admin Dashboard
+              </Link>
+            )}
+            <button
+              onClick={handleLogout}
+              className="bg-yellow-300 hover:bg-yellow-400 text-black px-4 py-2 rounded-md font-medium"
+            >
+              Logout
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main className="pt-32">
-        {/* Hero */}
+        {/* — Hero Section */}
         <section
           className="relative h-[500px] bg-cover bg-center"
           style={{ backgroundImage: `url('/vape_back.png')` }}
@@ -386,89 +420,104 @@ export default function Home() {
           </div>
         </section>
 
-        {/* BrandPromise full width */}
+        {/* — BrandPromise (full width) */}
         <section className="w-full py-16 bg-gray-900">
           <BrandPromise />
         </section>
 
-        {/* Shop by Category */}
-        <section id="shop" className="py-16 px-6 sm:px-8 xl:px-20">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
-              Shop by Category
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-6">
-              {categories.map((cat) => (
-                <FadeInOnScroll key={cat.id}>
-                  <div
-                    onClick={() => router.push(`/category/${cat.id}`)}
-                    className="relative group cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition"
-                  >
-                    <div className="relative w-full h-40">
-                      <Image
-                        src={cat.image_url}
-                        alt={cat.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors" />
-                    <span className="absolute bottom-4 left-4 text-white font-semibold text-lg">
-                      {cat.name}
-                    </span>
-                  </div>
-                </FadeInOnScroll>
-              ))}
-            </div>
+        {/* — Shop by Category (full width, larger cards) */}
+        <section id="shop" className="py-16">
+          <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
+            Shop by Category
+          </h2>
+          <div className="px-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-8">
+            {categories.map((cat) => (
+              <FadeInOnScroll key={cat.id}>
+                <div
+                  onClick={() => router.push(`/category/${cat.id}`)}
+                  className="relative group cursor-pointer overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition"
+                  style={{ aspectRatio: "4/3" }}
+                >
+                  <Image
+                    src={cat.image_url}
+                    alt={cat.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform"
+                  />
+                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/60 transition-colors" />
+                  <span className="absolute bottom-4 left-4 text-white font-semibold text-lg">
+                    {cat.name}
+                  </span>
+                </div>
+              </FadeInOnScroll>
+            ))}
           </div>
         </section>
 
-        {/* Our Collection */}
-        <section id="products" className="py-16 px-6 sm:px-8 lg:px-10">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
-              Our Collection
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {products.map((p) => (
-                <FadeInOnScroll key={p.id}>
-                  <div
-                    onClick={() => router.push(`/product/${p.id}`)}
-                    className="cursor-pointer bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition flex flex-col"
-                  >
-                    <div className="relative h-64 bg-black/20">
-                      <Image
-                        src={p.image_url}
-                        alt={p.name}
-                        fill
-                        className="object-contain p-4 transition-transform duration-300 hover:scale-105"
-                      />
-                    </div>
-                    <div className="p-4 flex flex-col flex-1">
-                      <h3 className="text-xl font-bold mb-1 text-white">
-                        {p.name}
-                      </h3>
-                      <p className="text-yellow-300 text-lg font-semibold mb-2">
+        {/* — Our Collection (full width, larger cards) */}
+        <section id="products" className="py-16">
+          <h2 className="text-3xl sm:text-4xl font-semibold text-center text-yellow-300 mb-10">
+            Our Collection
+          </h2>
+          <div className="px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+            {products.map((p, idx) => (
+              <FadeInOnScroll key={p.id}>
+                <div
+                  onClick={() => router.push(`/product/${p.id}`)}
+                  className={`relative overflow-hidden rounded-2xl shadow-lg group transition-transform hover:scale-[1.03] ${
+                    idx === 0 ? "lg:col-span-2" : ""
+                  }`}
+                >
+                  <div className="w-full aspect-[4/3] relative">
+                    <Image
+                      src={p.image_url}
+                      alt={p.name}
+                      fill
+                      className="object-cover brightness-90 group-hover:brightness-100 transition"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 p-6 flex flex-col justify-end">
+                    <h4 className="text-2xl font-bold text-white uppercase tracking-wide drop-shadow-lg">
+                      {p.name}
+                    </h4>
+                    <p className="mt-2 text-sm text-white/80 line-clamp-2">
+                      {p.description}
+                    </p>
+                    <div className="mt-4 flex items-center justify-between">
+                      <span className="text-xl font-semibold text-yellow-300">
                         ${p.price.toFixed(2)}
-                      </p>
-                      {p.stock_quantity > 0 ? (
-                        <p className="text-green-400 text-sm mb-4">
-                          In stock: {p.stock_quantity}
-                        </p>
-                      ) : (
-                        <p className="text-red-500 text-sm mb-4">
-                          Out of stock
-                        </p>
-                      )}
-                      <div className="mt-auto flex items-center space-x-2">
+                      </span>
+                      <div className="flex items-center space-x-2">
+                        {wishlistSet.has(p.id) ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFromWishlist(p.id);
+                            }}
+                            disabled={processingId === p.id}
+                            className="p-1 rounded-full bg-white/20 hover:bg-white/30 transition"
+                          >
+                            <HeartSolid className="h-5 w-5 text-yellow-300" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToWishlist(p.id);
+                            }}
+                            disabled={processingId === p.id}
+                            className="p-1 rounded-full bg-white/20 hover:bg-white/30 transition"
+                          >
+                            <HeartOutline className="h-5 w-5 text-yellow-300" />
+                          </button>
+                        )}
                         {cartMap[p.id] ? (
-                          <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
+                          <div className="flex items-center space-x-1 bg-white/20 rounded-full px-2 py-1">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 updateCartQty(p.id, -1);
                               }}
-                              className="p-1 hover:bg-white/20 rounded-full transition"
                             >
                               <MinusIcon className="h-4 w-4 text-white" />
                             </button>
@@ -478,9 +527,8 @@ export default function Home() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                updateCartQty(p.id, 1);
+                                updateCartQty(p.id, +1);
                               }}
-                              className="p-1 hover:bg-white/20 rounded-full transition"
                             >
                               <PlusIcon className="h-4 w-4 text-white" />
                             </button>
@@ -492,38 +540,22 @@ export default function Home() {
                               addToCart(p.id);
                             }}
                             disabled={processingId === p.id}
-                            className="flex-1 bg-yellow-300 hover:bg-yellow-400 py-2 rounded-md text-sm font-medium text-black disabled:opacity-50 transition"
+                            className="bg-yellow-300 hover:bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-medium transition"
                           >
                             Add to Cart
                           </button>
                         )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            wishlistSet.has(p.id)
-                              ? removeFromWishlist(p.id)
-                              : addToWishlist(p.id);
-                          }}
-                          disabled={processingId === p.id}
-                          className="p-2 hover:bg-yellow-100 rounded-full transition disabled:opacity-50"
-                        >
-                          {wishlistSet.has(p.id) ? (
-                            <HeartSolid className="h-5 w-5 text-yellow-400" />
-                          ) : (
-                            <HeartOutline className="h-5 w-5 text-yellow-400" />
-                          )}
-                        </button>
                       </div>
                     </div>
                   </div>
-                </FadeInOnScroll>
-              ))}
-            </div>
+                </div>
+              </FadeInOnScroll>
+            ))}
           </div>
         </section>
       </main>
 
-      {/* Footer */}
+      {/* — Footer */}
       <SiteFooter />
     </div>
   );
