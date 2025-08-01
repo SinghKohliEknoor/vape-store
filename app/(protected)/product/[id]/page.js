@@ -153,7 +153,7 @@ export default function ProductDetail() {
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       <Header />
 
-      <main className="flex flex-col-reverse px-4 py-10 gap-12 lg:flex-row lg:py-16 lg:px-16 lg:gap-16">
+      <main className="flex flex-col-reverse mt-15 px-4 py-10 gap-12 lg:flex-row lg:py-16 lg:px-16 lg:gap-16">
         {/* Product Details & Reviews */}
         <div className="flex-1 space-y-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-yellow-300">

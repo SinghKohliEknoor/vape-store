@@ -248,7 +248,7 @@ export default function CartPage() {
               ))}
             </div>
 
-            <div className="md:w-96 w-full md:fixed md:bottom-18 md:right-6">
+            <div className="md:w-96 w-full md:fixed md:bottom-18 md:right-6 z-60">
               <div className="bg-white/10 backdrop-blur-lg border border-white/20 p-6 rounded-lg shadow-md">
                 <h2 className="text-xl font-semibold mb-4 text-yellow-300">
                   Order Summary

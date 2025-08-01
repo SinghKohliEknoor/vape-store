@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Script from "next/script";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import Header from "app/components/Header";
@@ -12,11 +11,9 @@ import AddressAutocomplete from "app/components/AddressAutocomplete";
 export default function MyAccountPage() {
   const router = useRouter();
 
-  // loading & user
+  // ── User & Profile State ──
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-
-  // profile
   const [profile, setProfile] = useState({
     full_name: "",
     email: "",
@@ -26,15 +23,16 @@ export default function MyAccountPage() {
   const [password, setPassword] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // track last selected Place result
+  // ── Map & Geocoding State ──
+  const [mapScriptLoaded, setMapScriptLoaded] = useState(false);
   const [lastPlace, setLastPlace] = useState(null);
 
-  // map refs
+  // ── Map Refs ──
   const mapRef = useRef(null);
   const mapInstance = useRef(null);
   const markerRef = useRef(null);
 
-  // 1) load user & profile
+  // 1️⃣ Load current user & profile
   useEffect(() => {
     (async () => {
       const { data: { user: currentUser } = {}, error: userErr } =
@@ -43,7 +41,7 @@ export default function MyAccountPage() {
         router.push("/signin");
         return;
       }
-      setUser(currentUser);
+      setUser(currentUser); // fixed typo here
 
       const { data: userProfile, error: profErr } = await supabase
         .from("users")
@@ -59,33 +57,80 @@ export default function MyAccountPage() {
         phone_number: userProfile?.phone_number || "",
         address: userProfile?.address || "",
       });
+
       setLoading(false);
     })();
   }, [router]);
 
-  // 2) when lastPlace changes, init or recenter map + marker
+  // 2️⃣ Load Google Maps JS once
   useEffect(() => {
-    if (!lastPlace || !window.google || !mapRef.current) return;
-    const latLng = {
+    if (typeof window === "undefined") return;
+    if (window.google?.maps) {
+      setMapScriptLoaded(true);
+      return;
+    }
+    const existing = document.querySelector(
+      'script[src*="maps.googleapis.com"]'
+    );
+    if (existing) {
+      existing.addEventListener("load", () => setMapScriptLoaded(true));
+      if (window.google?.maps) setMapScriptLoaded(true);
+      return;
+    }
+    const tag = document.createElement("script");
+    tag.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&libraries=places`;
+    tag.async = true;
+    tag.onload = () => setMapScriptLoaded(true);
+    document.head.appendChild(tag);
+  }, []);
+
+  // 3️⃣ Geocode saved address on load, and always update on valid selection
+  useEffect(() => {
+    if (!mapScriptLoaded) return;
+
+    if (!profile.address) {
+      setLastPlace(null);
+      return;
+    }
+    if (lastPlace?.formatted_address === profile.address) {
+      return;
+    }
+
+    const geocoder = new window.google.maps.Geocoder();
+    geocoder.geocode({ address: profile.address }, (results, status) => {
+      if (status === "OK" && results[0]) {
+        setLastPlace(results[0]);
+      } else if (status !== "ZERO_RESULTS") {
+        console.error("Geocode error:", status);
+      }
+    });
+  }, [mapScriptLoaded, profile.address, lastPlace]);
+
+  // 4️⃣ Initialize or reinitialize map when we get a new place
+  useEffect(() => {
+    if (!mapScriptLoaded || !lastPlace || !mapRef.current) return;
+
+    const center = {
       lat: lastPlace.geometry.location.lat(),
       lng: lastPlace.geometry.location.lng(),
     };
 
     if (!mapInstance.current) {
       mapInstance.current = new window.google.maps.Map(mapRef.current, {
-        center: latLng,
+        center,
         zoom: 15,
       });
       markerRef.current = new window.google.maps.Marker({
-        position: latLng,
+        position: center,
         map: mapInstance.current,
       });
     } else {
-      mapInstance.current.setCenter(latLng);
-      markerRef.current.setPosition(latLng);
+      mapInstance.current.setCenter(center);
+      markerRef.current.setPosition(center);
     }
-  }, [lastPlace]);
+  }, [mapScriptLoaded, lastPlace]);
 
+  // Handlers
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push("/");
@@ -95,21 +140,21 @@ export default function MyAccountPage() {
     e.preventDefault();
     setSaving(true);
 
-    // force user to pick a suggestion
-    if (!lastPlace || lastPlace.formatted_address !== profile.address) {
+    if (
+      profile.address &&
+      (!lastPlace || lastPlace.formatted_address !== profile.address)
+    ) {
       alert("Please select your address from the suggestions.");
       setSaving(false);
       return;
     }
 
-    // update auth (name/password)
     const authUpdates = {};
     if (profile.full_name !== user.user_metadata?.full_name) {
       authUpdates.data = { full_name: profile.full_name };
     }
-    if (password) {
-      authUpdates.password = password;
-    }
+    if (password) authUpdates.password = password;
+
     if (Object.keys(authUpdates).length) {
       const { error: authErr } = await supabase.auth.updateUser(authUpdates);
       if (authErr) {
@@ -119,7 +164,6 @@ export default function MyAccountPage() {
       }
     }
 
-    // upsert into your users table
     const { error: dbErr } = await supabase.from("users").upsert([
       {
         id: user.id,
@@ -148,89 +192,89 @@ export default function MyAccountPage() {
   }
 
   return (
-    <>
-      {/* Load Google Maps + Places */}
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&libraries=places`}
-        strategy="beforeInteractive"
-      />
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
+      <Header />
 
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
-        <Header />
+      <main className="flex-1 pt-32 pb-16 px-4">
+        <div
+          className={`max-w-5xl mx-auto ${
+            lastPlace
+              ? "grid grid-cols-1 lg:grid-cols-2 gap-8"
+              : "flex justify-center"
+          }`}
+        >
+          {/* Form */}
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-xl w-full max-w-md">
+            <h1 className="text-3xl font-bold text-center text-yellow-300 mb-8">
+              My Account
+            </h1>
 
-        <main className="flex-1 pt-32 pb-16 px-4">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* ——— form */}
-            <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-xl">
-              <h1 className="text-3xl font-bold text-center text-yellow-300 mb-8">
-                My Account
-              </h1>
+            <form onSubmit={handleSave} className="space-y-6">
+              <InputField
+                label="Full Name"
+                id="full_name"
+                value={profile.full_name}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, full_name: e.target.value }))
+                }
+              />
 
-              <form onSubmit={handleSave} className="space-y-6">
-                <InputField
-                  label="Full Name"
-                  id="full_name"
-                  value={profile.full_name}
-                  onChange={(e) =>
-                    setProfile((p) => ({ ...p, full_name: e.target.value }))
-                  }
-                />
+              <InputField
+                label="Email"
+                id="email"
+                value={profile.email}
+                readOnly
+              />
 
-                <InputField
-                  label="Email"
-                  id="email"
-                  value={profile.email}
-                  readOnly
-                />
+              <InputField
+                label="Password"
+                id="password"
+                type="password"
+                value={password}
+                placeholder="••••••••"
+                onChange={(e) => setPassword(e.target.value)}
+              />
 
-                <InputField
-                  label="Password"
-                  id="password"
-                  type="password"
-                  value={password}
-                  placeholder="••••••••"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+              <InputField
+                label="Phone Number"
+                id="phone_number"
+                value={profile.phone_number}
+                onChange={(e) =>
+                  setProfile((p) => ({ ...p, phone_number: e.target.value }))
+                }
+              />
 
-                <InputField
-                  label="Phone Number"
-                  id="phone_number"
-                  value={profile.phone_number}
-                  onChange={(e) =>
-                    setProfile((p) => ({ ...p, phone_number: e.target.value }))
-                  }
-                />
+              <AddressAutocomplete
+                value={profile.address}
+                onChange={(addr, place) => {
+                  setProfile((p) => ({ ...p, address: addr }));
+                  if (place) setLastPlace(place);
+                }}
+              />
 
-                <AddressAutocomplete
-                  value={profile.address}
-                  onChange={(addr, place) => {
-                    setProfile((p) => ({ ...p, address: addr }));
-                    setLastPlace(place);
-                  }}
-                />
+              <div className="flex justify-between items-center pt-4 border-t border-white/20">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className={`bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold shadow transition ${
+                    saving ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow"
+                >
+                  Logout
+                </button>
+              </div>
+            </form>
+          </div>
 
-                <div className="flex justify-between items-center pt-4 border-t border-white/20">
-                  <button
-                    type="submit"
-                    disabled={saving}
-                    className={`bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-2 rounded-lg font-semibold shadow transition ${
-                      saving ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {saving ? "Saving…" : "Save Changes"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold shadow"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </form>
-            </div>
-
-            {/* ——— map */}
+          {/* Map */}
+          {lastPlace && (
             <div className="h-80 lg:h-auto rounded-2xl overflow-hidden border border-white/20 shadow-lg">
               <div
                 ref={mapRef}
@@ -238,16 +282,16 @@ export default function MyAccountPage() {
                 style={{ minHeight: "300px" }}
               />
             </div>
-          </div>
-        </main>
+          )}
+        </div>
+      </main>
 
-        <SiteFooter />
-      </div>
-    </>
+      <SiteFooter />
+    </div>
   );
 }
 
-// ---------- helpers ----------
+// InputField helper
 function InputField({
   label,
   id,

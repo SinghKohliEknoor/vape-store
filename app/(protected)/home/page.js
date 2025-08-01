@@ -273,7 +273,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
       {/* ——— Header ——— */}
       <header className="fixed inset-x-0 top-4 z-50 px-4">
-        <div className="mx-auto w-full max-w-screen-xl bg-black/60 backdrop-blur-lg border border-white/20 rounded-3xl flex items-center justify-between px-8 py-4 shadow-2xl">
+        <div className="mx-auto w-full max-w-[1600px] bg-black/60 backdrop-blur-lg border border-white/20 rounded-3xl flex items-center justify-between px-8 py-4 shadow-2xl">
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <Image src="/Logo.png" width={60} height={60} alt="Vape Vault" />
@@ -297,7 +297,7 @@ export default function Home() {
 
             {/* Filter Menu */}
             {showFilterMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-black text-white border border-white/30 rounded-xl p-4 z-50 shadow-xl">
+              <div className="absolute right-0 mt-2 w-64 bg-black text-white border border-white/30 rounded-xl p-4 z-60 shadow-xl">
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -380,6 +380,9 @@ export default function Home() {
             </Link>
             <Link href="/cart" className="hover:text-yellow-400">
               Cart
+            </Link>
+            <Link href="/order-history" className="hover:text-yellow-400">
+              Order History
             </Link>
             {/* only show for admins */}
             {userRole === "admin" && (

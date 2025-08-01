@@ -212,7 +212,7 @@ export default function ChatWidget() {
         className="fixed bottom-6 right-6 bg-yellow-300 text-black p-3 rounded-full shadow-lg z-50"
         aria-label="Chat"
       >
-        💬
+        <span className="text-lg">💬</span>
       </button>
 
       {isOpen && (
