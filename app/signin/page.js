@@ -3,16 +3,17 @@
 
 import { useState, Suspense } from "react";
 import SigninForm from "./SigninForm";
+import Link from "next/link";
 
 export default function SigninPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white flex flex-col">
       {/* Header */}
       <header className="flex justify-center items-center px-6 py-4 border-b border-white/10 bg-white/10 backdrop-blur-md">
-        <a href="/" className="flex items-center space-x-3">
+        <Link href="/" className="flex items-center space-x-3">
           <img src="/Logo.png" alt="Vape Vault Logo" className="w-20 h-20" />
           <h1 className="text-3xl font-bold text-yellow-300">Vape Vault</h1>
-        </a>
+        </Link>
       </header>
 
       {/* Form */}
